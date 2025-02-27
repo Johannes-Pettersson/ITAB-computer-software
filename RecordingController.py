@@ -37,7 +37,7 @@ async def simulate_gate():
 
 # serial communication with mcu to start recording
 async def mcu_recording(gate_type, seq_num):
-    port = "/dev/ttyUSB0"
+    port = os.getenv("UART_PORT")
     baudrate = 115200
     timeout = 1
     ser = serial.Serial(port, baudrate, timeout=timeout)
