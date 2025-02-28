@@ -39,15 +39,17 @@ async def simulate_gate():
 async def mcu_recording(gate_type, seq_num):
     port = os.getenv("UART_PORT")
     baudrate = 115200
-    timeout = 1
+    timeout = 10
+    print("debug1")
     ser = serial.Serial(port, baudrate, timeout=timeout)
+    print("debug2")
     byte_value = (gate_type << 7) | (seq_num & 0b01111111)
     byte_to_send = bytes([byte_value])
     ser.write(byte_to_send)
-    ser.close()
     print(f"Byte in binary: {bin(byte_value)[2:].zfill(8)}")
     print(f"Byte to send: {byte_to_send}")
-    mcu_response = await ser.read(size=1)
+    mcu_response = ser.read(size=1)
+    ser.close()
     return mcu_response
 
 # simulates the mcu recording
@@ -71,8 +73,8 @@ async def main():
         # gate_response = asyncio.create_task(gate_sequence())
         gate_response = asyncio.create_task(simulate_gate())
         mcu_response = asyncio.create_task(mcu_recording(gate_type, seq_num))
-        print({bin(await mcu_response)[2:].zfill(8)})
-        print(await gate_response)
+        print("mcu_response", await mcu_response)
+        print("gate_response", await gate_response)
 
     print("Recording completed")
 
