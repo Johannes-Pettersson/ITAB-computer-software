@@ -52,16 +52,16 @@ async def mcu_recording(gate_type, seq_num):
 
 # simulates the mcu recording
 async def simulate_mcu(gate_type, seq_num):
-    print ("MCU recording started")
-    print (f"Gate Type: {gate_type}, Sequence Number: {seq_num}")
+    print("MCU recording started")
+    print(f"Gate Type: {gate_type}, Sequence Number: {seq_num}")
     await asyncio.sleep(6)
-    print ("MCU recording stopped")
+    print("MCU recording stopped")
     return 0b10000000
 
 async def main():
     print("Gate types: Good-Gate = 1, Faulty-Gate = 0")
     gate_type = int(input("Enter gate type: "))
-    print("Sequence numbers: 0-127")
+    print("Sequence numbers: 0-127")    
     seq_num = int(input("Enter total sequences to record: "))
     print(os.getenv("UART_PORT"))
 
@@ -70,11 +70,11 @@ async def main():
         # mcu_response = asyncio.create_task(mcu_recording(gate_type, seq_num))
         # gate_response = asyncio.create_task(gate_sequence())
         gate_response = asyncio.create_task(simulate_gate())
-        mcu_response = asyncio.create_task(simulate_mcu(gate_type, seq_num))
-        print(await mcu_response)
+        mcu_response = asyncio.create_task(mcu_recording(gate_type, seq_num))
+        print({bin(await mcu_response)[2:].zfill(8)})
         print(await gate_response)
 
     print("Recording completed")
 
-load_dotenv()
+load_dotenv(override=True)
 asyncio.run(main())
