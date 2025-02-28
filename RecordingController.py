@@ -6,15 +6,14 @@ from dotenv import load_dotenv, dotenv_values
 
 # Async API Call to ITAB gate
 async def gate_sequence():
-    url = "http://192.168.30.139:5000/open_count"
+    url = os.getenv("GATE_URL")
 
     headers = {
         "Content-Type": "application/json"
     }
-    id = 122
     open_count = 1
     data = {
-        "id": id,
+        "id": os.getenv("GATE_ID"),
         "open_count": open_count
     }
 
@@ -65,7 +64,6 @@ async def main():
     gate_type = int(input("Enter gate type: "))
     print("Sequence numbers: 0-127")    
     seq_num = int(input("Enter total sequences to record: "))
-    print(os.getenv("UART_PORT"))
 
     for i in range(1, seq_num+1):
         print(f"Recording sequence {i}")
