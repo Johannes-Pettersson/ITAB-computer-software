@@ -34,21 +34,52 @@ async def simulate_gate():
     print ("Gate closed")
     return "Done"
 
-# serial communication with mcu to start recording
-async def mcu_recording(gate_type, seq_num):
-    port = os.getenv("UART_PORT")
-    baudrate = 115200
-    timeout = 10
-    print("debug1")
-    ser = serial.Serial(port, baudrate, timeout=timeout)
-    print("debug2")
-    byte_value = (gate_type << 7) | (seq_num & 0b01111111)
-    byte_to_send = bytes([byte_value])
+def mcu_demount(ser: serial.Serial):
+    byte_to_send = bytes([0x7F])
+
     ser.write(byte_to_send)
-    print(f"Byte in binary: {bin(byte_value)[2:].zfill(8)}")
-    print(f"Byte to send: {byte_to_send}")
+
     mcu_response = ser.read(size=1)
+
+    # If a timeout is set and no response is received.
+    if len(mcu_response) == 0:
+        raise Exception("No byte received from mcu during demount.")
+    
+    return mcu_response
+
+def mcu_mount(ser: serial.Serial):
+    byte_to_send = bytes([0xFF])
+
+    ser.write(byte_to_send)
+
+    mcu_response = ser.read(size=1)
+
+    # If a timeout is set and no response is received.
+    if len(mcu_response) == 0:
+        raise Exception("No byte received from mcu during mount.")
+    
+    return mcu_response
+
+
+# serial communication with mcu to start recording
+async def mcu_recording(ser: serial.Serial, gate_type, seq_num):
+
+    byte_value = (gate_type << 7) | (seq_num & 0b01111111)
+    byte_to_send = bytes([byte_value]) 
+
+    print(f"Byte in binary: {bin(byte_value)}")
+    print(f"Byte to send: {byte_to_send}")
+
+    ser.write(byte_to_send)
+
+    mcu_response = ser.read(size=1)
+
+    # If a timeout is set and no response is received.
+    if len(mcu_response) == 0:
+        raise Exception("No byte received from mcu.")
+    
     ser.close()
+
     return mcu_response
 
 # simulates the mcu recording
@@ -62,19 +93,59 @@ async def simulate_mcu(gate_type, seq_num):
 async def main():
     print("Gate types: Good-Gate = 1, Faulty-Gate = 0")
     gate_type = int(input("Enter gate type: "))
-    print("Sequence numbers: 0-127")    
+    print("Sequence numbers: 0-126")    
     seq_num = int(input("Enter total sequences to record: "))
 
-    for i in range(1, seq_num+1):
+    # Open serial communication to mcu
+    port = os.getenv("UART_PORT")
+    baudrate = 115200
+    timeout = 15
+    ser = serial.Serial(port, baudrate, timeout=timeout)
+
+    mcu_response = mcu_mount(ser)
+
+    if mcu_response == b"\x00":
+        raise Exception("MCU Error: Mount error")
+    elif mcu_response == b"\xF1":
+        print("MCU Success: Mount success")
+    else:
+        print(f"Unknown response from mcu: {mcu_response}")
+
+
+    for i in range(seq_num):
+        if(seq_num > 126):
+            seq_num = 126
+
         print(f"Recording sequence {i}")
         # mcu_response = asyncio.create_task(mcu_recording(gate_type, seq_num))
         # gate_response = asyncio.create_task(gate_sequence())
         gate_response = asyncio.create_task(simulate_gate())
-        mcu_response = asyncio.create_task(mcu_recording(gate_type, seq_num))
-        print("mcu_response", await mcu_response)
+        mcu_response = asyncio.create_task(mcu_recording(ser, gate_type, i))
+        
         print("gate_response", await gate_response)
+        await mcu_response
+
+        if mcu_response == b"\xF0":
+            print("MCU Success: Recording success")
+        elif mcu_response == b"\x01":
+            raise Exception("MCU Error: Cannot create wavefile")
+        elif mcu_response == b"\x02":
+            raise Exception("MCU Error: Cannot close wavefile")
+        elif mcu_response == b"\x03":
+            raise Exception("MCU Error: Card not mounted")
+
+
+    mcu_response = mcu_demount(ser)
+
+    if mcu_response == b"\xF2":
+        print("MCU Response: Demount success")
+    else:
+        print(f"Unknown response from mcu: {mcu_response}")
 
     print("Recording completed")
+
+
+
 
 load_dotenv(override=True)
 asyncio.run(main())
