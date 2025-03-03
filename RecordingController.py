@@ -2,28 +2,22 @@ import requests
 import serial
 import asyncio
 import os
+import json
 from dotenv import load_dotenv, dotenv_values
 
 # Async API Call to ITAB gate
-async def gate_sequence():
+async def gate_sequence(open_count):
     url = os.getenv("GATE_URL")
 
+    payload = json.dumps({
+    "id": os.getenv("GATE_ID"),
+    "open_count": open_count
+    })
     headers = {
-        "Content-Type": "application/json"
+    'Content-Type': 'application/json'
     }
-    open_count = 1
-    data = {
-        "id": os.getenv("GATE_ID"),
-        "open_count": open_count
-    }
+    response = requests.request("POST", url, headers=headers, data=payload)
 
-    response = await requests.post(
-        url,
-        headers=headers,
-        json = data)
-
-    print("Status Code", response.status_code)
-    print("Response", response.text)
     return response.text
 
 # simulates the gate sequence
@@ -117,10 +111,10 @@ async def main():
             seq_num = 126
 
         print(f"Recording sequence {i}")
-        # mcu_response = asyncio.create_task(mcu_recording(gate_type, seq_num))
-        # gate_response = asyncio.create_task(gate_sequence())
-        gate_response = asyncio.create_task(simulate_gate())
-        mcu_response = asyncio.create_task(mcu_recording(ser, gate_type, i))
+        # mcu_response = asyncio.create_task(mcu_recording(ser, gate_type, i))
+        gate_response = asyncio.create_task(gate_sequence(i))
+        # gate_response = asyncio.create_task(simulate_gate())
+        # mcu_response = asyncio.create_task(sim(gate_type, seq_num))
         
         print("gate_response", await gate_response)
         await mcu_response
