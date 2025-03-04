@@ -37,7 +37,7 @@ def mcu_demount(ser: serial.Serial):
 
     # If a timeout is set and no response is received.
     if len(mcu_response) == 0:
-        raise Exception("No byte received from mcu during demount.")
+        raise Exception("MCU Error: No answer received after demount")
     
     return mcu_response
 
@@ -50,7 +50,7 @@ def mcu_mount(ser: serial.Serial):
 
     # If a timeout is set and no response is received.
     if len(mcu_response) == 0:
-        raise Exception("No byte received from mcu during mount.")
+        raise Exception("MCU Error: No answer received after mount")
     
     return mcu_response
 
@@ -61,16 +61,13 @@ async def mcu_recording(ser: serial.Serial, gate_type, seq_num):
     byte_value = (gate_type << 7) | (seq_num & 0b01111111)
     byte_to_send = bytes([byte_value]) 
 
-    print(f"Byte in binary: {bin(byte_value)}")
-    print(f"Byte to send: {byte_to_send}")
-
     ser.write(byte_to_send)
     await asyncio.sleep(1)
     mcu_response = ser.read(size=1)
 
     # If a timeout is set and no response is received.
     if len(mcu_response) == 0:
-        raise Exception("No byte received from mcu.")
+        raise Exception("MCU Error: No answer received after recording")
     
     return mcu_response
 
@@ -88,6 +85,8 @@ async def main():
     print("Sequence numbers: 1-126")    
     seq_num = int(input("Enter total sequences to record: "))
 
+    print("------------------------------")
+
     # Open serial communication to mcu
     port = os.getenv("UART_PORT")
     baudrate = 115200
@@ -101,20 +100,21 @@ async def main():
     elif mcu_response == b"\xF1":
         print("MCU Success: Mount success")
     else:
-        print(f"Unknown response from mcu: {mcu_response}")
+        raise Exception(f"MCU Unknown Response: Mount response {mcu_response}")
 
 
     for i in range(seq_num):
         if(seq_num > 126):
             seq_num = 126
 
-        print(f"Recording sequence {i}")
+        print("------------------------------")
+        print(f"Recording sequence {i+1}")
         mcu_response = asyncio.create_task(mcu_recording(ser, gate_type, i))
         gate_response = asyncio.create_task(gate_sequence())
         # gate_response = asyncio.create_task(simulate_gate())
         # mcu_response = asyncio.create_task(sim(gate_type, seq_num))
         
-        print("gate_response", await gate_response)
+        print("Gate Response: ", await gate_response)
         mcu_response_result = await mcu_response
 
         if mcu_response_result == b"\xF0":
@@ -126,16 +126,19 @@ async def main():
         elif mcu_response_result == b"\x03":
             raise Exception("MCU Error: Card not mounted")
         else:
-            print(f"unknown mcu response {mcu_response_result}")
+            raise Exception(f"MCU Unknown Response: Recording response {mcu_response_result}")
 
 
     mcu_response = mcu_demount(ser)
 
+    print("------------------------------")
+
     if mcu_response == b"\xF2":
         print("MCU Response: Demount success")
     else:
-        print(f"Unknown response from mcu: {mcu_response}")
+        raise Exception(f"MCU Unknown Response: Demount response {mcu_response}")
 
+    print("------------------------------")
     print("Recording completed")
 
 
