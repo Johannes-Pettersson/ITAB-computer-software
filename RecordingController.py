@@ -82,8 +82,15 @@ async def simulate_mcu(gate_type, seq_num):
 async def main():
     print("Gate types: Good-Gate = 1, Faulty-Gate = 0")
     gate_type = int(input("Enter gate type: "))
+    while gate_type < 0 or gate_type > 1:
+        print("Invalid gate_type...")
+        gate_type = int(input("Enter gate type: "))
+
     print("Sequence numbers: 1-126")    
     seq_num = int(input("Enter total sequences to record: "))
+    while seq_num < 1 or seq_num > 126:
+        print("Invalid seq_num...")
+        seq_num = int(input("Enter total sequences to record: "))
 
     print("------------------------------")
 
@@ -104,8 +111,6 @@ async def main():
 
 
     for i in range(seq_num):
-        if(seq_num > 126):
-            seq_num = 126
 
         print("------------------------------")
         print(f"Recording sequence {i+1}")
