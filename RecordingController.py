@@ -65,7 +65,7 @@ async def mcu_recording(ser: serial.Serial, gate_type, seq_num):
     print(f"Byte to send: {byte_to_send}")
 
     ser.write(byte_to_send)
-
+    await asyncio.sleep(1)
     mcu_response = ser.read(size=1)
 
     # If a timeout is set and no response is received.
