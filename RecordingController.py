@@ -72,8 +72,6 @@ async def mcu_recording(ser: serial.Serial, gate_type, seq_num):
     if len(mcu_response) == 0:
         raise Exception("No byte received from mcu.")
     
-    ser.close()
-
     return mcu_response
 
 # simulates the mcu recording
@@ -94,16 +92,16 @@ async def main():
     port = os.getenv("UART_PORT")
     baudrate = 115200
     timeout = 15
-    # ser = serial.Serial(port, baudrate, timeout=timeout)
+    ser = serial.Serial(port, baudrate, timeout=timeout)
 
-    # mcu_response = mcu_mount(ser)
+    mcu_response = mcu_mount(ser)
 
-    # if mcu_response == b"\x00":
-    #     raise Exception("MCU Error: Mount error")
-    # elif mcu_response == b"\xF1":
-    #     print("MCU Success: Mount success")
-    # else:
-    #     print(f"Unknown response from mcu: {mcu_response}")
+    if mcu_response == b"\x00":
+        raise Exception("MCU Error: Mount error")
+    elif mcu_response == b"\xF1":
+        print("MCU Success: Mount success")
+    else:
+        print(f"Unknown response from mcu: {mcu_response}")
 
 
     for i in range(seq_num):
@@ -111,32 +109,32 @@ async def main():
             seq_num = 126
 
         print(f"Recording sequence {i}")
-        # mcu_response = asyncio.create_task(mcu_recording(ser, gate_type, i))
+        mcu_response = asyncio.create_task(mcu_recording(ser, gate_type, i))
         gate_response = asyncio.create_task(gate_sequence())
         # gate_response = asyncio.create_task(simulate_gate())
         # mcu_response = asyncio.create_task(sim(gate_type, seq_num))
         
         print("gate_response", await gate_response)
-    #     await mcu_response
+        mcu_response_result = await mcu_response
 
-    #     if mcu_response == b"\xF0":
-    #         print("MCU Success: Recording success")
-    #     elif mcu_response == b"\x01":
-    #         raise Exception("MCU Error: Cannot create wavefile")
-    #     elif mcu_response == b"\x02":
-    #         raise Exception("MCU Error: Cannot close wavefile")
-    #     elif mcu_response == b"\x03":
-    #         raise Exception("MCU Error: Card not mounted")
-    #     else:
-    #         print(f"unknown mcu response {mcu_response}")
+        if mcu_response_result == b"\xF0":
+            print("MCU Success: Recording success")
+        elif mcu_response_result == b"\x01":
+            raise Exception("MCU Error: Cannot create wavefile")
+        elif mcu_response_result == b"\x02":
+            raise Exception("MCU Error: Cannot close wavefile")
+        elif mcu_response_result == b"\x03":
+            raise Exception("MCU Error: Card not mounted")
+        else:
+            print(f"unknown mcu response {mcu_response_result}")
 
 
-    # mcu_response = mcu_demount(ser)
+    mcu_response = mcu_demount(ser)
 
-    # if mcu_response == b"\xF2":
-    #     print("MCU Response: Demount success")
-    # else:
-    #     print(f"Unknown response from mcu: {mcu_response}")
+    if mcu_response == b"\xF2":
+        print("MCU Response: Demount success")
+    else:
+        print(f"Unknown response from mcu: {mcu_response}")
 
     print("Recording completed")
 
