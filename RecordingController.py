@@ -6,12 +6,12 @@ import json
 from dotenv import load_dotenv, dotenv_values
 
 # Async API Call to ITAB gate
-async def gate_sequence(open_count):
+async def gate_sequence():
     url = os.getenv("GATE_URL")
 
     payload = json.dumps({
     "id": os.getenv("GATE_ID"),
-    "open_count": open_count
+    "open_count": 1
     })
     headers = {
     'Content-Type': 'application/json'
@@ -87,7 +87,7 @@ async def simulate_mcu(gate_type, seq_num):
 async def main():
     print("Gate types: Good-Gate = 1, Faulty-Gate = 0")
     gate_type = int(input("Enter gate type: "))
-    print("Sequence numbers: 0-126")    
+    print("Sequence numbers: 1-126")    
     seq_num = int(input("Enter total sequences to record: "))
 
     # Open serial communication to mcu
@@ -111,8 +111,8 @@ async def main():
             seq_num = 126
 
         print(f"Recording sequence {i}")
-        # mcu_response = asyncio.create_task(mcu_recording(ser, gate_type, i))
-        gate_response = asyncio.create_task(gate_sequence(i))
+        mcu_response = asyncio.create_task(mcu_recording(ser, gate_type, i))
+        gate_response = asyncio.create_task(gate_sequence())
         # gate_response = asyncio.create_task(simulate_gate())
         # mcu_response = asyncio.create_task(sim(gate_type, seq_num))
         
@@ -127,6 +127,8 @@ async def main():
             raise Exception("MCU Error: Cannot close wavefile")
         elif mcu_response == b"\x03":
             raise Exception("MCU Error: Card not mounted")
+        else:
+            print(f"unknown mcu response {mcu_response}")
 
 
     mcu_response = mcu_demount(ser)
