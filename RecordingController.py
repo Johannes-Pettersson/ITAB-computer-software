@@ -56,9 +56,9 @@ def mcu_mount(ser: serial.Serial):
 
 
 # serial communication with mcu to start recording
-async def mcu_recording(ser: serial.Serial, gate_type, seq_num):
+async def mcu_recording(ser: serial.Serial, gate_type):
 
-    byte_value = (gate_type << 7) | (seq_num & 0b01111111)
+    byte_value = (gate_type << 7)
     byte_to_send = bytes([byte_value]) 
 
     ser.write(byte_to_send)
@@ -99,9 +99,9 @@ def get_input_gate_type():
     return gate_type
 
 def get_input_seq_num():
-    print("Sequence numbers: 1-126")    
+    print("Sequence numbers: 1-1000")    
     seq_num = int(input("Enter total sequences to record: "))
-    while seq_num < 1 or seq_num > 126:
+    while seq_num < 1 or seq_num > 1000:
         print("Invalid seq_num...")
         seq_num = int(input("Enter total sequences to record: "))
     return seq_num
@@ -153,7 +153,7 @@ async def main():
     for i in range(seq_num):
 
         print(f"Recording sequence {i+1}")
-        mcu_response = asyncio.create_task(mcu_recording(ser, gate_type, i))
+        mcu_response = asyncio.create_task(mcu_recording(ser, gate_type))
         gate_response = asyncio.create_task(gate_sequence())
         # gate_response = asyncio.create_task(simulate_gate())
         # mcu_response = asyncio.create_task(sim(gate_type, seq_num))
