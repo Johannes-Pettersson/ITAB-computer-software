@@ -1,54 +1,61 @@
 import librosa
-import sounddevice
 import matplotlib.pyplot as plt
 import numpy as np
+import sounddevice as sd
+
+faulty_files = [
+    "../Recording/Faulty_gate_recordings/Session 1/B_G_1.WAV",
+    "../Recording/Faulty_gate_recordings/Session 1/B_G_77.WAV"
+]
+
+functioning_files = [
+    "../Recording/Functioning_gate_recordings/Session 1 (some ticking)/G_G_1.WAV",
+    "../Recording/Functioning_gate_recordings/Session 1 (some ticking)/G_G_33.WAV"
+]
+
+fig, axes = plt.subplots(nrows=2, ncols=max(len(faulty_files), len(functioning_files)), figsize=(12, 8), sharex=True, sharey=True)
+
+for i, file in enumerate(faulty_files):
+    y, sr = librosa.load(file)
+    S, phase = librosa.magphase(librosa.stft(y))
+    cent = librosa.feature.spectral_centroid(S=S)
+    times = librosa.times_like(cent)
+
+    ax = axes[0, i] 
+    
+    librosa.display.specshow(librosa.amplitude_to_db(S, ref=np.max), y_axis='log', x_axis='time', ax=ax)
+    ax.plot(times, cent.T, label="Spectral centroid", color='w')
+    ax.legend(loc='upper right')
+    title = file.split("/")[-2] + "/" + file.split("/")[-1]
+    ax.set_title(f"{title}")  
+
+    if i != 0:
+        ax.set_ylabel("")
+        ax.tick_params(labelleft=False)
+
+for i, file in enumerate(functioning_files):
+    y, sr = librosa.load(file)
+    S, phase = librosa.magphase(librosa.stft(y))
+    cent = librosa.feature.spectral_centroid(S=S)
+    times = librosa.times_like(cent)
+
+    ax = axes[1, i] 
+    
+    librosa.display.specshow(librosa.amplitude_to_db(S, ref=np.max), y_axis='log', x_axis='time', ax=ax)
+    ax.plot(times, cent.T, label="Spectral centroid", color='w')
+    ax.legend(loc='upper right')
+    title = file.split("/")[-2] + "/" + file.split("/")[-1]
+    ax.set_title(f"{title}")  
+
+    if i != 0:
+        ax.set_ylabel("")
+        ax.tick_params(labelleft=False)
+
+y, sr = librosa.load(functioning_files[1])
+
+sd.play(y, sr)
+sd.wait()
 
 
-file1_path = "../Recording/Faulty_gate_recordings/Session 1/B_G_2.WAV"
-file2_path = "../Recording/Functioning_gate_recordings/Session 2/G_G_1.WAV"
-
-
-# Plot 1 calculations ---------------------------------------------------------------------
-
-y1, sr1 = librosa.load(file1_path)
-
-S1, phase1 = librosa.magphase(librosa.stft(y1))
-
-cent1 = librosa.feature.spectral_centroid(S=S1)
-
-times1 = librosa.times_like(cent1)
-
-# Plot 2 calculations ----------------------------------------------------------------------
-
-y2, sr2 = librosa.load(file2_path)
-
-S2, phase2 = librosa.magphase(librosa.stft(y2))
-
-cent2 = librosa.feature.spectral_centroid(S=S2)
-
-times2 = librosa.times_like(cent2)
-
-# ----------------------------------------------------------------------------------
-
-# Create plot figure
-fig, (ax1, ax2) = plt.subplots(nrows=2, sharex=True, figsize=(10, 8))
-
-# Show Plot 1
-librosa.display.specshow(librosa.amplitude_to_db(S1, ref=np.max), y_axis='log', x_axis='time', ax=ax1)
-ax1.plot(times1, cent1.T, label="Spectral centroid", color='w')
-ax1.legend(loc='upper right')
-ax1.set(title='Log Power Spectrogram - File 1')
-
-# Show Plot 2
-librosa.display.specshow(librosa.amplitude_to_db(S2, ref=np.max), y_axis='log', x_axis='time', ax=ax2)
-ax2.plot(times2, cent2.T, label="Spectral centroid", color='w')
-ax2.legend(loc='upper right')
-ax2.set(title='Log Power Spectrogram - File 2')
-
-
-# Display plots
 plt.tight_layout()
 plt.show()
-
-# sounddevice.play(y, sr)
-# sounddevice.wait()
