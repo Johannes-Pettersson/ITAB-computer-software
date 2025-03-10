@@ -51,10 +51,11 @@ for i, file in enumerate(functioning_files):
         ax.set_ylabel("")
         ax.tick_params(labelleft=False)
 
-y, sr = librosa.load(functioning_files[1])
 
-sd.play(y, sr)
-sd.wait()
+#y, sr = librosa.load(functioning_files[1])
+
+#sd.play(y, sr)
+#sd.wait()
 
 
 plt.tight_layout()
