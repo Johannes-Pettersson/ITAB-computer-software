@@ -15,13 +15,13 @@ functioning_files = [
 
 fig, axes = plt.subplots(nrows=2, ncols=max(len(faulty_files), len(functioning_files)), figsize=(12, 8), sharex=True, sharey=True)
 
-for i, file in enumerate(faulty_files):
+def plot_file(file, row, col, axes):
     y, sr = librosa.load(file)
     S, phase = librosa.magphase(librosa.stft(y))
-    cent = librosa.feature.spectral_centroid(S=S)
+    cent = librosa.feature.spectral_centroid(S=S, sr=sr)
     times = librosa.times_like(cent)
 
-    ax = axes[0, i] 
+    ax = axes[row, col] 
     
     librosa.display.specshow(librosa.amplitude_to_db(S, ref=np.max), y_axis='log', x_axis='time', ax=ax)
     ax.plot(times, cent.T, label="Spectral centroid", color='w')
@@ -29,27 +29,16 @@ for i, file in enumerate(faulty_files):
     title = file.split("/")[-2] + "/" + file.split("/")[-1]
     ax.set_title(f"{title}")  
 
-    if i != 0:
+    if col != 0:
         ax.set_ylabel("")
         ax.tick_params(labelleft=False)
+
+for i, file in enumerate(faulty_files):
+    plot_file(file, 0, i, axes=axes)
 
 for i, file in enumerate(functioning_files):
-    y, sr = librosa.load(file)
-    S, phase = librosa.magphase(librosa.stft(y))
-    cent = librosa.feature.spectral_centroid(S=S)
-    times = librosa.times_like(cent)
+    plot_file(file, 1, i, axes=axes)
 
-    ax = axes[1, i] 
-    
-    librosa.display.specshow(librosa.amplitude_to_db(S, ref=np.max), y_axis='log', x_axis='time', ax=ax)
-    ax.plot(times, cent.T, label="Spectral centroid", color='w')
-    ax.legend(loc='upper right')
-    title = file.split("/")[-2] + "/" + file.split("/")[-1]
-    ax.set_title(f"{title}")  
-
-    if i != 0:
-        ax.set_ylabel("")
-        ax.tick_params(labelleft=False)
 
 
 #y, sr = librosa.load(functioning_files[1])

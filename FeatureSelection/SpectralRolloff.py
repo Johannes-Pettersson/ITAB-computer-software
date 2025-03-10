@@ -16,7 +16,7 @@ functioning_files = [
 fig, axes = plt.subplots(nrows=2, ncols=max(len(faulty_files), len(functioning_files)), figsize=(12, 8), sharex=True, sharey=True)
 roll_percent = .37
 
-for i, file in enumerate(faulty_files):
+def plot_file(file, row, col, axes):
     y, sr = librosa.load(file)
 
     S, phase = librosa.magphase(librosa.stft(y))
@@ -25,7 +25,7 @@ for i, file in enumerate(faulty_files):
 
     times = librosa.times_like(rolloff)
 
-    ax = axes[0, i] 
+    ax = axes[row, col] 
     
     librosa.display.specshow(librosa.amplitude_to_db(S, ref=np.max), y_axis='log', x_axis='time', ax=ax)
     ax.plot(times, rolloff[0], label=f"Roll-off frequency ({roll_percent})", color='w')
@@ -33,30 +33,15 @@ for i, file in enumerate(faulty_files):
     title = file.split("/")[-2] + "/" + file.split("/")[-1]
     ax.set_title(f"{title}")  
 
-    if i != 0:
+    if col != 0:
         ax.set_ylabel("")
         ax.tick_params(labelleft=False)
+
+for i, file in enumerate(faulty_files):
+    plot_file(file, 0, i, axes=axes)
 
 for i, file in enumerate(functioning_files):
-    y, sr = librosa.load(file)
-
-    S, phase = librosa.magphase(librosa.stft(y))
-
-    rolloff = librosa.feature.spectral_rolloff(S=S, sr=sr, roll_percent=roll_percent)
-
-    times = librosa.times_like(rolloff)
-
-    ax = axes[1, i] 
-    
-    librosa.display.specshow(librosa.amplitude_to_db(S, ref=np.max), y_axis='log', x_axis='time', ax=ax)
-    ax.plot(times, rolloff[0], label=f"Roll-off frequency ({roll_percent})", color='w')
-    ax.legend(loc='upper right')
-    title = file.split("/")[-2] + "/" + file.split("/")[-1]
-    ax.set_title(f"{title}")  
-
-    if i != 0:
-        ax.set_ylabel("")
-        ax.tick_params(labelleft=False)
+    plot_file(file, 1, i, axes=axes)
 
 
 #y, sr = librosa.load(functioning_files[1])
