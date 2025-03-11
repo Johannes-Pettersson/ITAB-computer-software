@@ -42,32 +42,32 @@ def process_audio(file_path, frame_size, hop_size):
     y, sr = librosa.load(file_path)
     ae = amplitude_envelope(y, frame_size, hop_size)
     t = librosa.frames_to_time(range(len(ae)), hop_length=hop_size)
-    return y, sr, ae, t
+    return y, sr, ae, t, np.mean(ae), np.max(ae), np.std(ae)  # Added mean, max, and std deviation
 
 # Parameters
 FRAME_SIZE = 512
 HOP_SIZE = 512
 
 # Process audio files
+titles = [faulty_gates[4], faulty_gates[6], good_gates[4], good_gates[6]]
 audio_data = [
-    process_audio(faulty_gates[0], FRAME_SIZE, HOP_SIZE),
-    process_audio(faulty_gates[1], FRAME_SIZE, HOP_SIZE),
-    process_audio(good_gates[0], FRAME_SIZE, HOP_SIZE),
-    process_audio(good_gates[1], FRAME_SIZE, HOP_SIZE)
+    process_audio(titles[0], FRAME_SIZE, HOP_SIZE),
+    process_audio(titles[1], FRAME_SIZE, HOP_SIZE),
+    process_audio(titles[2], FRAME_SIZE, HOP_SIZE),
+    process_audio(titles[3], FRAME_SIZE, HOP_SIZE)
 ]
 
 # Set up the figure with subplots
 fig, axes = plt.subplots(2, 2, figsize=(15, 7.25))
 
 # Plot each waveform and amplitude envelope
-titles = [faulty_gates[0], faulty_gates[1], good_gates[0], good_gates[1]]
-for ax, (y, sr, ae, t), title in zip(axes.flatten(), audio_data, titles):
-    ax.set_title(title)
+for ax, (y, sr, ae, t, mean_ae, max_ae, std_ae), title in zip(axes.flatten(), audio_data, titles):
+    ax.set_title(f"{title}\nMean: {mean_ae:.4f}, Max: {max_ae:.4f}, Std: {std_ae:.4f}")
     librosa.display.waveshow(y, sr=sr, ax=ax)
     ax.plot(t, ae, color='r')
 
 # Set consistent axis limits
-max_time = max(t[-1] for _, _, _, t in audio_data)
+max_time = max(t[-1] for _, _, _, t, _, _, _ in audio_data)
 for ax in axes.flatten():
     ax.set_xlim([0, max_time])
     ax.set_ylim([-1, 1])  # Assuming normalized audio data
