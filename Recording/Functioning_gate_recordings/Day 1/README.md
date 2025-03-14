@@ -1,0 +1,1 @@
+The recordings form Day 1 were done using two microphones. One for the functioning gate recordings and one for the faulty ones

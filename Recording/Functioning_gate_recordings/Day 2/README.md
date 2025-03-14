@@ -1,0 +1,1 @@
+All recordings from Day 2, both functioning and faulty, were recorded by the same microphone
