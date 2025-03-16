@@ -3,6 +3,8 @@ import numpy as np
 import os
 import random
 from SpectralCentroid import calculate_values as sc_calculate_values
+from RootMeanSquareEnergy import calculate_values as rmse_calculate_values
+from ArgParser import create_arg_parser
 
 def get_files(num_of_functioning_files, num_of_faulty_files):
     functioning_files = []
@@ -146,6 +148,15 @@ def _get_feature_value(feature_type, file):
         case "sc_deriv_min":
             _, _, _, _, _, _, _, _, min_deriv = sc_calculate_values(file)
             return min_deriv
+        case "rmse_mean":
+            _, _, _, _, mean_val, _, _ = rmse_calculate_values(file)
+            return mean_val
+        case "rmse_max":
+            _, _, _, _, _, max_val, _ = rmse_calculate_values(file)
+            return max_val
+        case "rmse_std":
+            _, _, _, _, _, _, std_val = rmse_calculate_values(file)
+            return std_val
         case default:
             raise Exception("Feature_type not defined")
         
@@ -191,19 +202,26 @@ def plot_two_features(feature_1_type: str, feature_2_type: str, num_of_functioni
 
     plot_two_dim("Func gates", combinded_functioning_feature_values, functioning_files, "Faulty gates", combinded_faulty_feature_values, faulty_files, feature_1_type, feature_2_type)
 
+def main():
+    parser = create_arg_parser()
+    args = parser.parse_args()
 
+    if len(args.features) == 1:
+        plot_one_feature(args.features[0], args.good_files, args.faulty_files)
+    elif len(args.features) == 2:
+        plot_two_features(args.features[0], args.features[1], args.good_files, args.faulty_files)
+    else:
+        parser.print_help()
 
 # Exampleusage plot_two_dim
 # test1 = np.random.rand(10) * 100
 # test2 = np.random.rand(10) * 100
 # plot_one_dim(data1=test1, data1_title="Functioning", data1_labels=[f"Point {i} test1" for i in range(len(test1))], data2=test2, data2_labels=[f"Point {i} test2" for i in range(len(test1))], data2_title="Faulty", xlabel="Feature")
 
-
 # Exampleusage plot_two_dim
 # test1 = np.random.rand(100, 2) * 4
 # test2 = (np.random.rand(100, 2) * 4) +6  
 # plot_two_dim(data1=test1, data1_title="Functioning", data1_labels=[f"Point {i} test1" for i in range(len(test1))], data2=test2, data2_title="Faulty", data2_labels=[f"Point {i} test2" for i in range(len(test1))], xlabel="Feature 1", ylabel="Feature 2")
 
-
-# plot_one_feature("sc_ptp", 10000, 10000)
-plot_two_features(feature_1_type="sc_ptp", feature_2_type="sc_deriv_min", num_of_functioning_files=10000, num_of_faulty_files=10000)
+if __name__ == "__main__":
+    main()
