@@ -10,6 +10,7 @@ from SpectralBandwidth import calculate_values as sb_calculate_values
 from SpectralRolloff import calculate_values as ro_calculate_values
 from BandEnergyRatio import calculate_values as ber_calculate_values
 from MelFrequencyCepstralCoefficients import calculate_values as mfcc_calculate_values
+from SpectralBandwidth import calculate_values as sb_calculate_values
 from ArgParser import create_arg_parser
 
 def get_files( num_of_good_gate_files, num_of_faulty_gate_files):
@@ -233,6 +234,21 @@ def _get_feature_value(feature_type, file):
         case "mfcc_kurtosis":
             _, _, _, _, mfcc_kurtosis = mfcc_calculate_values(file, coef=1, dct_type=4)
             return mfcc_kurtosis
+        case "sb_max":
+            _, _, _, _, _, sb_max, _, _ = sb_calculate_values(file)
+            return sb_max
+        case "sb_min":
+            _, _, _, sb_min, _, _, _, _ = sb_calculate_values(file)
+            return sb_min
+        case "sb_ptp":
+            _, _, _, _, sb_ptp, _, _, _ = sb_calculate_values(file)
+            return sb_ptp
+        case "sb_mean":
+             _, _, _, _, _, _, sb_mean, _ = sb_calculate_values(file)
+             return sb_mean
+        case "sb_std":
+            _, _, _, _, _, _, _, sb_std = sb_calculate_values(file)
+            return sb_std
         case default:
             raise Exception("Feature_type not defined")
 
