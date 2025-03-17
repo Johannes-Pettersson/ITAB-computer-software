@@ -4,6 +4,7 @@ import os
 import random
 from SpectralCentroid import calculate_values as sc_calculate_values
 from RootMeanSquareEnergy import calculate_values as rmse_calculate_values
+from ZeroCrossingRate import calculate_values as zcr_calculate_values
 from ArgParser import create_arg_parser
 
 def get_files(num_of_functioning_files, num_of_faulty_files):
@@ -47,6 +48,8 @@ def plot_one_dim(data1_title, data1, data1_labels, data2_title, data2, data2_lab
     y2 = np.ones(len(data2))*-1
 
     fig, ax = plt.subplots()
+    mng = plt.get_current_fig_manager()
+    mng.full_screen_toggle()
 
     sc1 = ax.scatter(data1, y1, color=data1_color, label=data1_title, picker=True)
     sc2 = ax.scatter(data2, y2, color=data2_color, label=data2_title, picker=True)
@@ -94,6 +97,8 @@ def plot_two_dim(data1_title, data1, data1_labels, data2_title, data2, data2_lab
     x2, y2 = data2[:, 0], data2[:, 1]
 
     fig, ax = plt.subplots()
+    mng = plt.get_current_fig_manager()
+    mng.full_screen_toggle()
 
     sc1 = ax.scatter(x1, y1, color=data1_color, label=data1_title, picker=True)
     sc2 = ax.scatter(x2, y2, color=data2_color, label=data2_title, picker=True)
@@ -156,6 +161,18 @@ def _get_feature_value(feature_type, file):
             return max_val
         case "rmse_std":
             _, _, _, _, _, _, std_val = rmse_calculate_values(file)
+            return std_val
+        case "zcr_total":
+            _, _, _, total_val, _, _, _, _ = zcr_calculate_values(file)
+            return total_val
+        case "zcr_mean":
+            _, _, _, _, _, mean_val, _, _ = zcr_calculate_values(file)
+            return mean_val
+        case "zcr_max":
+            _, _, _, _, _, _, max_val, _ = zcr_calculate_values(file)
+            return max_val
+        case "zcr_std":
+            _, _, _, _, _, _, _, std_val = zcr_calculate_values(file)
             return std_val
         case default:
             raise Exception("Feature_type not defined")
