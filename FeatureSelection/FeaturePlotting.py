@@ -5,6 +5,7 @@ import random
 from SpectralCentroid import calculate_values as sc_calculate_values
 from RootMeanSquareEnergy import calculate_values as rmse_calculate_values
 from ZeroCrossingRate import calculate_values as zcr_calculate_values
+from AmplitudeEnvelope import calculate_values as ae_calculate_values
 from ArgParser import create_arg_parser
 
 def get_files(num_of_functioning_files, num_of_faulty_files):
@@ -174,9 +175,17 @@ def _get_feature_value(feature_type, file):
         case "zcr_std":
             _, _, _, _, _, _, _, std_val = zcr_calculate_values(file)
             return std_val
+        case "ae_mean":
+            _, _, _, _, mean_val, _, _ = ae_calculate_values(file)
+            return mean_val
+        case "ae_max":
+            _, _, _, _, _, max_val, _ = ae_calculate_values(file)
+            return max_val
+        case "ae_std":
+            _, _, _, _, _, _, std_val = ae_calculate_values(file)
+            return std_val
         case default:
             raise Exception("Feature_type not defined")
-        
 
 def plot_one_feature(feature_type: str, num_of_functioning_files, num_of_faulty_files):
     """Feature type is a string thats defined to specify a certain feature. If you wish to add a new type. Simply implement it in the match case in the _get_feature_value function"""       
