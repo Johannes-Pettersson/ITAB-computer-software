@@ -5,43 +5,6 @@ import librosa
 import random
 import os
 
-# Parameters
-FRAME_SIZE = 1024
-HOP_SIZE = 512
-
-
-def get_files(num_of_good_files, num_of_faulty_files):
-    good_files = []
-    faulty_files = []
-
-    good_directories = [
-        "../Recording/Functioning_gate_recordings/Day 2/Session 1",
-        "../Recording/Functioning_gate_recordings/Day 2/Session 2",
-    ]
-    faulty_directories = [
-        "../Recording/Faulty_gate_recordings/Day 2/Session 1",
-        "../Recording/Faulty_gate_recordings/Day 2/Session 2",
-    ]
-
-    for dir in good_directories:
-        for entry in os.scandir(dir):
-            if entry.is_file():
-                good_files.append(entry.path)
-
-    for dir in faulty_directories:
-        for entry in os.scandir(dir):
-            if entry.is_file():
-                faulty_files.append(entry.path)
-
-    while len(good_files) > num_of_good_files:
-        good_files.pop(random.randrange(len(good_files)))
-
-    while len(faulty_files) > num_of_faulty_files:
-        faulty_files.pop(random.randrange(len(faulty_files)))
-
-    return good_files + faulty_files
-
-
 def calculate_values(file):
     """
     Calculate the mean, max and std values of the RMSE of an audio file.
@@ -68,10 +31,12 @@ def calculate_values(file):
 
         std_val : Standard deviation of the RMSE (numpy.std).
     """
+    frame_size = 1024
+    hop_size = 512
     y, sr = librosa.load(file)
-    rms = librosa.feature.rms(y=y, frame_length=FRAME_SIZE, hop_length=HOP_SIZE)[0]
+    rms = librosa.feature.rms(y=y, frame_length=frame_size, hop_length=hop_size)[0]
     frames = range(0, rms.size)
-    t = librosa.frames_to_time(frames, hop_length=HOP_SIZE)
+    t = librosa.frames_to_time(frames, hop_length=hop_size)
     mean_val = np.mean(rms)
     max_val = np.max(rms)
     std_val = np.std(rms)
@@ -87,13 +52,17 @@ def calculate_values(file):
 
 
 def main():
-    # Process audio files
-    n_good_files = 2
-    n_faulty_files = 2
-    titles = get_files(n_good_files, n_faulty_files)
+    titles = [
+        "../Recording/Functioning_gate_recordings/Day 2/Session 1/G_G_1.WAV",
+        "../Recording/Functioning_gate_recordings/Day 2/Session 2/G_G_1.WAV",
+        "../Recording/Faulty_gate_recordings/Day 2/Session 1/B_G_1.WAV",
+        "../Recording/Faulty_gate_recordings/Day 2/Session 2/B_G_1.WAV",
+    ]
     audio_data = [calculate_values(file) for file in titles]
     # Set up the figure with subplots
-    fig, axes = plt.subplots(n_good_files, n_faulty_files, figsize=(15, 7.25))
+    fig, axes = plt.subplots(2, 2)
+    mng = plt.get_current_fig_manager()
+    mng.full_screen_toggle()
 
     # Plot each waveform and amplitude envelope
     for ax, (y, sr, t, rms, mean_val, max_val, std_val), title in zip(
