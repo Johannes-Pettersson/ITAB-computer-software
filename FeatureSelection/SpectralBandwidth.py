@@ -3,27 +3,53 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sounddevice as sd
 
-faulty_files = [
-    "../Recording/Faulty_gate_recordings/Session 1/B_G_100.WAV"
-]
+def calculate_values(file_path):
+    """
+    Calculate the max, min and ptp-value of the spectral bandwidth of an audio file.
+    Uses librosa to load the audio file and compute the Spectral bandwidth
+    
+    Parameters
+    ----------
+        file_path : str Path to the audio file.
+        
+    Returns
+    -------        
+        sr : sampling rate of y (librosa.load).
+        
+        S : Spectogram magnitude
+        
+        spec_bw : Spectral bandwidth
+        
+        bw_min : Minimum value of spectral bandwidth
+        
+        bw_ptp : Peak-to-Peak value of spectral bandwidth
+        
+        bw_max : maximum value of spectral bandwidth
 
-functioning_files = [
-    "../Recording/Functioning_gate_recordings/Session 2/G_G_23.WAV"
-]
+        bw_mean : mean value of spectral bandwidth
 
-fig, axes = plt.subplots(nrows=2, ncols=len(faulty_files) + len(functioning_files), figsize=(12, 8), sharex=True)
+        bw_std : standard deviation of spectral bandwidth
+    """
+
+    y, sr = librosa.load(file_path)
+    S, phase = librosa.magphase(librosa.stft(y=y))
+    spec_bw = librosa.feature.spectral_bandwidth(y=y, sr=sr, p=1)
+
+    bw_min = np.min(spec_bw)
+    bw_max = np.max(spec_bw)
+    bw_ptp = np.ptp(spec_bw)
+    bw_mean = np.mean(spec_bw)
+    bw_std = np.std(spec_bw)
+
+    return sr, S, spec_bw, bw_min, bw_ptp, bw_max, bw_mean, bw_std
+
 
 def plot_file(file, col, axes, fig):
-    y, sr = librosa.load(file)
-
-    spec_bw = librosa.feature.spectral_bandwidth(y=y, sr=sr)
-
-    S, phase = librosa.magphase(librosa.stft(y=y))
+    sr, S, spec_bw, _, _, _, _, _ = calculate_values(file)
 
     times = librosa.times_like(spec_bw)
 
     centroid = librosa.feature.spectral_centroid(S=S)
-
 
     axes[0, col].semilogy(times, spec_bw[0], label='Spectral bandwidth')
     axes[0, col].set(ylabel='Hz', xticks=[], xlim=[times.min(), times.max()])
@@ -40,14 +66,32 @@ def plot_file(file, col, axes, fig):
     axes[1, col].plot(times, centroid[0], label='Spectral centroid', color='w')
 
 
-for i, file in enumerate(faulty_files + functioning_files):
-    plot_file(file, i, axes=axes, fig=fig)
+def main():
+
+    faulty_files = [
+        "../Recording/Faulty_gate_recordings/Day 2/Session 1/B_G_100.WAV"
+    ]
+
+    functioning_files = [
+        "../Recording/Functioning_gate_recordings/Day 2/Session 2/G_G_23.WAV"
+    ]
+
+    fig, axes = plt.subplots(nrows=2, ncols=len(faulty_files) + len(functioning_files), figsize=(12, 8), sharex=True)
 
 
-#y, sr = librosa.load(functioning_files[1])
-
-#sd.play(y, sr)
-#sd.wait()
+    for i, file in enumerate(faulty_files + functioning_files):
+        plot_file(file, i, axes=axes, fig=fig)
 
 
-plt.show()
+    #y, sr = librosa.load(functioning_files[1])
+
+    #sd.play(y, sr)
+    #sd.wait()
+
+    mng = plt.get_current_fig_manager()
+    mng.full_screen_toggle()
+
+    plt.show()
+
+if __name__ == "__main__":
+    main()
