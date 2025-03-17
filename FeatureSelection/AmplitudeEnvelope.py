@@ -3,32 +3,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import librosa.display
 
-
-print("Amplitude Envelope Begin")
-faulty_gates = [
-    "../Recording/Faulty_gate_recordings/Session 1/B_G_1.WAV",
-    "../Recording/Faulty_gate_recordings/Session 1/B_G_25.WAV",
-    "../Recording/Faulty_gate_recordings/Session 1/B_G_50.WAV",
-    "../Recording/Faulty_gate_recordings/Session 1/B_G_75.WAV",
-    "../Recording/Faulty_gate_recordings/Session 1/B_G_99.WAV",
-    "../Recording/Faulty_gate_recordings/Session 3/B_G_1.WAV",
-    "../Recording/Faulty_gate_recordings/Session 3/B_G_25.WAV",
-    "../Recording/Faulty_gate_recordings/Session 3/B_G_50.WAV",
-    "../Recording/Faulty_gate_recordings/Session 3/B_G_75.WAV",
-    "../Recording/Faulty_gate_recordings/Session 3/B_G_99.WAV",
-]
-good_gates = [
-    "../Recording/Functioning_gate_recordings/Session 2/G_G_1.WAV",
-    "../Recording/Functioning_gate_recordings/Session 2/G_G_25.WAV",
-    "../Recording/Functioning_gate_recordings/Session 2/G_G_50.WAV",
-    "../Recording/Functioning_gate_recordings/Session 2/G_G_75.WAV",
-    "../Recording/Functioning_gate_recordings/Session 2/G_G_99.WAV",
-    "../Recording/Functioning_gate_recordings/Session 2/G_G_101.WAV",
-    "../Recording/Functioning_gate_recordings/Session 2/G_G_125.WAV",
-    "../Recording/Functioning_gate_recordings/Session 2/G_G_150.WAV",
-    "../Recording/Functioning_gate_recordings/Session 2/G_G_175.WAV",
-    "../Recording/Functioning_gate_recordings/Session 2/G_G_199.WAV",
-]
 # Function to compute amplitude envelope
 def amplitude_envelope(signal, frame_size, hop_size):
     amplitude_envelope = []
@@ -37,42 +11,69 @@ def amplitude_envelope(signal, frame_size, hop_size):
         amplitude_envelope.append(current_frame_amplitude_envelope)
     return np.array(amplitude_envelope)
 
-# Function to load audio and compute envelope
-def process_audio(file_path, frame_size, hop_size):
+
+def calculate_values(file_path):
+    """
+    Calculate the mean, max and std values of the Amplitude Envelope of an audio file.
+    Uses librosa to load the audio file and compute the Amplitude Envelope,
+    with FRAME_SIZE and HOP_SIZE as parameters (1024 and 512 by default).
+    
+    Parameters
+    ----------
+        file_path : str Path to the audio file.
+        
+    Returns
+    -------
+        y : audio time series. Multi-channel is supported (librosa.load).
+        
+        sr : sampling rate of y (librosa.load).
+        
+        ae : amplitude envelope of the audio file.
+        
+        t : time of each frame (librosa.frames_to_time).
+        
+        mean_val : mean value of the amplitude envelope.
+        
+        max_val : maximum value of the amplitude envelope.
+        
+        std_val : standard deviation of the amplitude envelope.
+    """
+    frame_size = 1024
+    hop_size = 512
     y, sr = librosa.load(file_path)
     ae = amplitude_envelope(y, frame_size, hop_size)
     t = librosa.frames_to_time(range(len(ae)), hop_length=hop_size)
-    return y, sr, ae, t, np.mean(ae), np.max(ae), np.std(ae)  # Added mean, max, and std deviation
+    mean_val = np.mean(ae)
+    max_val = np.max(ae)
+    std_val = np.std(ae)
+    return y, sr, ae, t, mean_val, max_val, std_val
 
-# Parameters
-FRAME_SIZE = 512
-HOP_SIZE = 512
 
-# Process audio files
-titles = [faulty_gates[4], faulty_gates[6], good_gates[4], good_gates[6]]
-audio_data = [
-    process_audio(titles[0], FRAME_SIZE, HOP_SIZE),
-    process_audio(titles[1], FRAME_SIZE, HOP_SIZE),
-    process_audio(titles[2], FRAME_SIZE, HOP_SIZE),
-    process_audio(titles[3], FRAME_SIZE, HOP_SIZE)
-]
+def main():
+    titles = [
+        "../Recording/Functioning_gate_recordings/Day 2/Session 1/G_G_1.WAV",
+        "../Recording/Functioning_gate_recordings/Day 2/Session 2/G_G_1.WAV",
+        "../Recording/Faulty_gate_recordings/Day 2/Session 1/B_G_1.WAV",
+        "../Recording/Faulty_gate_recordings/Day 2/Session 2/B_G_1.WAV",
+    ]
+    audio_data = [calculate_values(file) for file in titles]
 
-# Set up the figure with subplots
-fig, axes = plt.subplots(2, 2, figsize=(15, 7.25))
+    fig, axes = plt.subplots(2, 2)
+    mng = plt.get_current_fig_manager()
+    mng.full_screen_toggle()
 
-# Plot each waveform and amplitude envelope
-for ax, (y, sr, ae, t, mean_ae, max_ae, std_ae), title in zip(axes.flatten(), audio_data, titles):
-    ax.set_title(f"{title}\nMean: {mean_ae:.4f}, Max: {max_ae:.4f}, Std: {std_ae:.4f}")
-    librosa.display.waveshow(y, sr=sr, ax=ax)
-    ax.plot(t, ae, color='r')
+    for ax, (y, sr, ae, t, mean_val, max_val, std_val), title in zip(axes.flatten(), audio_data, titles):
+        ax.set_title(f"{title}\nMean: {mean_val:.4f}, Max: {max_val:.4f}, Std: {std_val:.4f}")
+        librosa.display.waveshow(y, sr=sr, ax=ax)
+        ax.plot(t, ae, color='r')
 
-# Set consistent axis limits
-max_time = max(t[-1] for _, _, _, t, _, _, _ in audio_data)
-for ax in axes.flatten():
-    ax.set_xlim([0, max_time])
-    ax.set_ylim([-1, 1])  # Assuming normalized audio data
-    
-plt.tight_layout()
-plt.show()
+    max_time = max(t[-1] for _, _, _, t, _, _, _ in audio_data)
+    for ax in axes.flatten():
+        ax.set_xlim([0, max_time])
+        ax.set_ylim([-1, 1])
+        
+    plt.tight_layout()
+    plt.show()
 
-print("Amplitude Envelope End")
+if __name__ == "__main__":
+    main()
