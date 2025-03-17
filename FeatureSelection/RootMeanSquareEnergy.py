@@ -1,82 +1,119 @@
-import librosa
 import numpy as np
 import matplotlib.pyplot as plt
 import librosa.display
-
-
-print("Remote Mean Square Energy Begin")
-faulty_gates = [
-    "../Recording/Faulty_gate_recordings/Session 1/B_G_1.WAV",
-    "../Recording/Faulty_gate_recordings/Session 1/B_G_25.WAV",
-    "../Recording/Faulty_gate_recordings/Session 1/B_G_50.WAV",
-    "../Recording/Faulty_gate_recordings/Session 1/B_G_75.WAV",
-    "../Recording/Faulty_gate_recordings/Session 1/B_G_99.WAV",
-    "../Recording/Faulty_gate_recordings/Session 3/B_G_1.WAV",
-    "../Recording/Faulty_gate_recordings/Session 3/B_G_25.WAV",
-    "../Recording/Faulty_gate_recordings/Session 3/B_G_50.WAV",
-    "../Recording/Faulty_gate_recordings/Session 3/B_G_75.WAV",
-    "../Recording/Faulty_gate_recordings/Session 3/B_G_99.WAV",
-]
-good_gates = [
-    "../Recording/Functioning_gate_recordings/Session 2/G_G_1.WAV",
-    "../Recording/Functioning_gate_recordings/Session 2/G_G_25.WAV",
-    "../Recording/Functioning_gate_recordings/Session 2/G_G_50.WAV",
-    "../Recording/Functioning_gate_recordings/Session 2/G_G_75.WAV",
-    "../Recording/Functioning_gate_recordings/Session 2/G_G_99.WAV",
-    "../Recording/Functioning_gate_recordings/Session 2/G_G_101.WAV",
-    "../Recording/Functioning_gate_recordings/Session 2/G_G_125.WAV",
-    "../Recording/Functioning_gate_recordings/Session 2/G_G_150.WAV",
-    "../Recording/Functioning_gate_recordings/Session 2/G_G_175.WAV",
-    "../Recording/Functioning_gate_recordings/Session 2/G_G_199.WAV",
-]
-# RMSE from scratch
-def rms(signal, frame_length, hop_length):
-    rmse = []
-    for i in range(0, len(signal), hop_length):
-        rms_current_frame = np.sqrt(np.sum(signal[i:i+frame_length]**2)/frame_length)
-        rmse.append(rms_current_frame)
-    return np.array(rmse)
-
-# Function to load audio and compute envelope
-def process_audio(file_path, frame_size, hop_size):
-    y, sr = librosa.load(file_path)
-    rmse = librosa.feature.rms(y=y, frame_length=FRAME_SIZE, hop_length=HOP_SIZE)[0]
-    frames = range(0, rmse.size)
-    t = librosa.frames_to_time(frames, hop_length=HOP_SIZE)
-    rmse_mean = np.mean(rmse)
-    rmse_max = np.max(rmse)
-    rmse_std = np.std(rmse)
-    return y, sr, rmse, t, rmse_mean, rmse_max, rmse_std # Added mean, max, and std deviation
+import librosa
+import random
+import os
+import argparse
 
 # Parameters
-FRAME_SIZE = 512
+FRAME_SIZE = 1024
 HOP_SIZE = 512
 
-# Process audio files
-titles = [faulty_gates[1], faulty_gates[2], good_gates[1], good_gates[2]]
-audio_data = [
-    process_audio(titles[0], FRAME_SIZE, HOP_SIZE),
-    process_audio(titles[1], FRAME_SIZE, HOP_SIZE),
-    process_audio(titles[2], FRAME_SIZE, HOP_SIZE),
-    process_audio(titles[3], FRAME_SIZE, HOP_SIZE)
-]
 
-# Set up the figure with subplots
-fig, axes = plt.subplots(2, 2, figsize=(15, 7.25))
+def get_files(num_of_good_files, num_of_faulty_files):
+    good_files = []
+    faulty_files = []
 
-# Plot each waveform and amplitude envelope
-for ax, (y, sr, rmse, t, rmse_mean, rmse_max, rmse_std), title in zip(axes.flatten(), audio_data, titles):
-    ax.set_title(f"{title}\nMean: {rmse_mean:.4f}, Max: {rmse_max:.4f}, Std: {rmse_std:.4f}")
-    librosa.display.waveshow(y, sr=sr, ax=ax)
-    ax.plot(t, rmse, color='r')
+    good_directories = [
+        "../Recording/Functioning_gate_recordings/Day 2/Session 1",
+        "../Recording/Functioning_gate_recordings/Day 2/Session 2",
+    ]
+    faulty_directories = [
+        "../Recording/Faulty_gate_recordings/Day 2/Session 1",
+        "../Recording/Faulty_gate_recordings/Day 2/Session 2",
+    ]
 
-# Set consistent axis limits
-max_time = max(t[-1] for _, _, _, t, _, _, _ in audio_data)
-for ax in axes.flatten():
-    ax.set_xlim([0, max_time])
-    ax.set_ylim([-1, 1])  # Assuming normalized audio data
-    
-plt.tight_layout()
-plt.show()
+    for dir in good_directories:
+        for entry in os.scandir(dir):
+            if entry.is_file():
+                good_files.append(entry.path)
 
-print("Remote Mean Square Energy End")
+    for dir in faulty_directories:
+        for entry in os.scandir(dir):
+            if entry.is_file():
+                faulty_files.append(entry.path)
+
+    while len(good_files) > num_of_good_files:
+        good_files.pop(random.randrange(len(good_files)))
+
+    while len(faulty_files) > num_of_faulty_files:
+        faulty_files.pop(random.randrange(len(faulty_files)))
+
+    return good_files + faulty_files
+
+
+def calculate_values(file):
+    """
+    Calculate the mean, max and std values of the RMSE of an audio file.
+    Uses librosa to load the audio file and compute the RMSE,
+    with FRAME_SIZE and HOP_SIZE as parameters (1024 and 512 by default).
+
+    Parameters
+    ----------
+    file : str Path to the audio file.
+
+    Returns
+    -------
+        y : audio time series. Multi-channel is supported (librosa.load).
+
+        sr : sampling rate of y (librosa.load).
+
+        t : time (in seconds) of each given frame number (librosa.frames_to_time).
+
+        rms : RMS value for each frame (librosa.feature.rms).
+
+        mean_val : Mean value of the RMSE (numpy.mean).
+
+        max_val : Maximum value of the RMSE (numpy.max).
+
+        std_val : Standard deviation of the RMSE (numpy.std).
+    """
+    y, sr = librosa.load(file)
+    rms = librosa.feature.rms(y=y, frame_length=FRAME_SIZE, hop_length=HOP_SIZE)[0]
+    frames = range(0, rms.size)
+    t = librosa.frames_to_time(frames, hop_length=HOP_SIZE)
+    mean_val = np.mean(rms)
+    max_val = np.max(rms)
+    std_val = np.std(rms)
+    return (
+        y,
+        sr,
+        t,
+        rms,
+        mean_val,
+        max_val,
+        std_val,
+    )
+
+
+def main():
+    # Process audio files
+    n_good_files = 2
+    n_faulty_files = 2
+    titles = get_files(n_good_files, n_faulty_files)
+    audio_data = [calculate_values(file) for file in titles]
+    # Set up the figure with subplots
+    fig, axes = plt.subplots(n_good_files, n_faulty_files, figsize=(15, 7.25))
+
+    # Plot each waveform and amplitude envelope
+    for ax, (y, sr, t, rms, mean_val, max_val, std_val), title in zip(
+        axes.flatten(), audio_data, titles
+    ):
+        ax.set_title(
+            f"{title}\nMean: {mean_val:.4f}, Max: {max_val:.4f}, Std: {std_val:.4f}"
+        )
+        librosa.display.waveshow(y, sr=sr, ax=ax)
+        ax.plot(t, rms, color="r")
+
+    # Set consistent axis limits
+    max_time = max(t[-1] for _, _, t, _, _, _, _ in audio_data)
+    for ax in axes.flatten():
+        ax.set_xlim([0, max_time])
+        ax.set_ylim([-1, 1])  # Assuming normalized audio data
+
+    plt.tight_layout()
+    plt.show()
+
+if __name__ == "__main__":
+    main()
