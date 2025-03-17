@@ -4,7 +4,6 @@ import librosa.display
 import librosa
 import random
 import os
-import argparse
 
 # Parameters
 FRAME_SIZE = 1024
