@@ -6,6 +6,7 @@ from SpectralCentroid import calculate_values as sc_calculate_values
 from RootMeanSquareEnergy import calculate_values as rmse_calculate_values
 from ZeroCrossingRate import calculate_values as zcr_calculate_values
 from AmplitudeEnvelope import calculate_values as ae_calculate_values
+from SpectralBandwidth import calculate_values as sb_calculate_values
 from ArgParser import create_arg_parser
 
 def get_files(num_of_functioning_files, num_of_faulty_files):
@@ -184,6 +185,21 @@ def _get_feature_value(feature_type, file):
         case "ae_std":
             _, _, _, _, _, _, std_val = ae_calculate_values(file)
             return std_val
+        case "sb_max":
+            _, _, _, _, _, sb_max, _, _ = sb_calculate_values(file)
+            return sb_max
+        case "sb_min":
+            _, _, _, sb_min, _, _, _, _ = sb_calculate_values(file)
+            return sb_min
+        case "sb_ptp":
+            _, _, _, _, sb_ptp, _, _, _ = sb_calculate_values(file)
+            return sb_ptp
+        case "sb_mean":
+             _, _, _, _, _, _, sb_mean, _ = sb_calculate_values(file)
+             return sb_mean
+        case "sb_std":
+            _, _, _, _, _, _, _, sb_std = sb_calculate_values(file)
+            return sb_std
         case default:
             raise Exception("Feature_type not defined")
 
