@@ -11,6 +11,7 @@ from SpectralRolloff import calculate_values as ro_calculate_values
 from BandEnergyRatio import calculate_values as ber_calculate_values
 from MelFrequencyCepstralCoefficients import calculate_values as mfcc_calculate_values
 from SpectralBandwidth import calculate_values as sb_calculate_values
+from SpectralRolloff import calculate_values as ro_calculate_values
 from ArgParser import create_arg_parser
 
 def get_files( num_of_good_gate_files, num_of_faulty_gate_files):
@@ -249,6 +250,18 @@ def _get_feature_value(feature_type, file):
         case "sb_std":
             _, _, _, _, _, _, _, sb_std = sb_calculate_values(file)
             return sb_std
+        case "ro_max":
+            _, _, _, _, ro_max, _, _, _ = ro_calculate_values(file=file, roll_percent=.37)
+            return ro_max
+        case "ro_min":
+            _, _, _, _, _, ro_min, _, _ = ro_calculate_values(file=file, roll_percent=.37)
+            return ro_min
+        case "ro_mean":
+            _, _, _, _, _, _, ro_mean, _ = ro_calculate_values(file=file, roll_percent=.37)
+            return ro_mean    
+        case "ro_std":
+            _, _, _, _, _, _, _, ro_std = ro_calculate_values(file=file, roll_percent=.37)
+            return ro_std
         case default:
             raise Exception("Feature_type not defined")
 
