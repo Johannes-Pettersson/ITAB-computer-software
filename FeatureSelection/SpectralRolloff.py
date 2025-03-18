@@ -3,25 +3,24 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sounddevice as sd
 
-faulty_files = [
-    "../Recording/Faulty_gate_recordings/Session 1/B_G_3.WAV",
-    "../Recording/Faulty_gate_recordings/Session 1/B_G_56.WAV"
-]
-
-functioning_files = [
-    "../Recording/Functioning_gate_recordings/Session 2/G_G_15.WAV",
-    "../Recording/Functioning_gate_recordings/Session 2/G_G_124.WAV"
-]
-
-fig, axes = plt.subplots(nrows=2, ncols=max(len(faulty_files), len(functioning_files)), figsize=(12, 8), sharex=True, sharey=True)
-roll_percent = .37
-
-def plot_file(file, row, col, axes):
+def calculate_values(file, roll_percent=.37):
     y, sr = librosa.load(file)
 
     S, phase = librosa.magphase(librosa.stft(y))
 
     rolloff = librosa.feature.spectral_rolloff(S=S, sr=sr, roll_percent=roll_percent)
+
+    ro_max = np.amax(rolloff)
+    ro_min = np.amin(rolloff)
+    ro_mean = np.mean(rolloff)
+    ro_std = np.std(rolloff)
+    
+    return S, sr, rolloff, roll_percent, ro_max, ro_min, ro_mean, ro_std
+
+
+def plot_file(file, row, col, axes):
+    
+    S, sr, rolloff, roll_percent, _, _, _, _ = calculate_values(file)
 
     times = librosa.times_like(rolloff)
 
@@ -37,18 +36,39 @@ def plot_file(file, row, col, axes):
         ax.set_ylabel("")
         ax.tick_params(labelleft=False)
 
-for i, file in enumerate(faulty_files):
-    plot_file(file, 0, i, axes=axes)
 
-for i, file in enumerate(functioning_files):
-    plot_file(file, 1, i, axes=axes)
+def main():
+
+    faulty_files = [
+        "../Recording/Faulty_gate_recordings/Day 2/Session 1/B_G_3.WAV",
+        "../Recording/Faulty_gate_recordings/Day 2/Session 1/B_G_56.WAV"
+    ]
+
+    functioning_files = [
+        "../Recording/Functioning_gate_recordings/Day 2/Session 2/G_G_15.WAV",
+        "../Recording/Functioning_gate_recordings/Day 2/Session 2/G_G_124.WAV"
+    ]
 
 
-#y, sr = librosa.load(functioning_files[1])
-
-#sd.play(y, sr)
-#sd.wait()
+    fig, axes = plt.subplots(nrows=2, ncols=max(len(faulty_files), len(functioning_files)), figsize=(12, 8), sharex=True, sharey=True)
 
 
-plt.tight_layout()
-plt.show()
+    for i, file in enumerate(faulty_files):
+        plot_file(file, 0, i, axes=axes)
+
+    for i, file in enumerate(functioning_files):
+        plot_file(file, 1, i, axes=axes)
+
+
+    #y, sr = librosa.load(functioning_files[1])
+
+    #sd.play(y, sr)
+    #sd.wait()
+
+
+    plt.tight_layout()
+    plt.show()
+
+
+if __name__ == "__main__":
+    main()

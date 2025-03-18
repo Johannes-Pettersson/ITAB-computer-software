@@ -7,6 +7,7 @@ from RootMeanSquareEnergy import calculate_values as rmse_calculate_values
 from ZeroCrossingRate import calculate_values as zcr_calculate_values
 from AmplitudeEnvelope import calculate_values as ae_calculate_values
 from SpectralBandwidth import calculate_values as sb_calculate_values
+from SpectralRolloff import calculate_values as ro_calculate_values
 from ArgParser import create_arg_parser
 
 def get_files(num_of_functioning_files, num_of_faulty_files):
@@ -200,6 +201,18 @@ def _get_feature_value(feature_type, file):
         case "sb_std":
             _, _, _, _, _, _, _, sb_std = sb_calculate_values(file)
             return sb_std
+        case "ro_max":
+            _, _, _, _, ro_max, _, _, _ = ro_calculate_values(file=file, roll_percent=.37)
+            return ro_max
+        case "ro_min":
+            _, _, _, _, _, ro_min, _, _ = ro_calculate_values(file=file, roll_percent=.37)
+            return ro_min
+        case "ro_mean":
+            _, _, _, _, _, _, ro_mean, _ = ro_calculate_values(file=file, roll_percent=.37)
+            return ro_mean    
+        case "ro_std":
+            _, _, _, _, _, _, _, ro_std = ro_calculate_values(file=file, roll_percent=.37)
+            return ro_std
         case default:
             raise Exception("Feature_type not defined")
 
