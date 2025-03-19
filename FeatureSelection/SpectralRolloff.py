@@ -39,28 +39,28 @@ def plot_file(file, row, col, axes):
 
 def main():
 
-    faulty_files = [
+    faulty_gate_files = [
         "../Recording/Faulty_gate_recordings/Day 2/Session 1/B_G_3.WAV",
         "../Recording/Faulty_gate_recordings/Day 2/Session 1/B_G_56.WAV"
     ]
 
-    functioning_files = [
+    good_gate_files = [
         "../Recording/Functioning_gate_recordings/Day 2/Session 2/G_G_15.WAV",
         "../Recording/Functioning_gate_recordings/Day 2/Session 2/G_G_124.WAV"
     ]
 
 
-    fig, axes = plt.subplots(nrows=2, ncols=max(len(faulty_files), len(functioning_files)), figsize=(12, 8), sharex=True, sharey=True)
+    fig, axes = plt.subplots(nrows=2, ncols=max(len(faulty_gate_files), len(good_gate_files)), figsize=(12, 8), sharex=True, sharey=True)
 
 
-    for i, file in enumerate(faulty_files):
+    for i, file in enumerate(faulty_gate_files):
         plot_file(file, 0, i, axes=axes)
 
-    for i, file in enumerate(functioning_files):
+    for i, file in enumerate(good_gate_files):
         plot_file(file, 1, i, axes=axes)
 
 
-    #y, sr = librosa.load(functioning_files[1])
+    #y, sr = librosa.load(good_gate_files[1])
 
     #sd.play(y, sr)
     #sd.wait()

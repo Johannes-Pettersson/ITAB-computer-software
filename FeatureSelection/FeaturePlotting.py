@@ -10,9 +10,9 @@ from SpectralBandwidth import calculate_values as sb_calculate_values
 from SpectralRolloff import calculate_values as ro_calculate_values
 from ArgParser import create_arg_parser
 
-def get_files(num_of_functioning_files, num_of_faulty_files):
-    functioning_files = []
-    faulty_files = []
+def get_files( num_of_good_gate_files, num_of_faulty_gate_files):
+    good_gate_files = []
+    faulty_gate_files = []
 
     functioning_directories = [
         "../Recording/Functioning_gate_recordings/Day 2/Session 1",
@@ -28,20 +28,20 @@ def get_files(num_of_functioning_files, num_of_faulty_files):
     for dir in functioning_directories:
         for entry in os.scandir(dir):  
             if entry.is_file():
-                functioning_files.append(entry.path)
+                good_gate_files.append(entry.path)
 
     for dir in faulty_directories:
         for entry in os.scandir(dir):  
             if entry.is_file():
-                faulty_files.append(entry.path)    
+                faulty_gate_files.append(entry.path)    
 
-    while(len(functioning_files) > num_of_functioning_files):
-        functioning_files.pop(random.randrange(len(functioning_files)))
+    while(len(good_gate_files) >  num_of_good_gate_files):
+        good_gate_files.pop(random.randrange(len(good_gate_files)))
 
-    while(len(faulty_files) > num_of_faulty_files):
-        faulty_files.pop(random.randrange(len(faulty_files)))
+    while(len(faulty_gate_files) > num_of_faulty_gate_files):
+        faulty_gate_files.pop(random.randrange(len(faulty_gate_files)))
 
-    return functioning_files, faulty_files
+    return good_gate_files, faulty_gate_files
 
 def plot_one_dim(data1_title, data1, data1_labels, data2_title, data2, data2_labels, xlabel):
     data1_color = 'blue'
@@ -216,26 +216,26 @@ def _get_feature_value(feature_type, file):
         case default:
             raise Exception("Feature_type not defined")
 
-def plot_one_feature(feature_type: str, num_of_functioning_files, num_of_faulty_files):
+def plot_one_feature(feature_type: str,  num_of_good_gate_files, num_of_faulty_gate_files):
     """Feature type is a string thats defined to specify a certain feature. If you wish to add a new type. Simply implement it in the match case in the _get_feature_value function"""       
     
-    functioning_files, faulty_files = get_files(num_of_functioning_files, num_of_faulty_files)
+    good_gate_files, faulty_gate_files = get_files( num_of_good_gate_files, num_of_faulty_gate_files)
 
-    functioning_feature_values = []
-    faulty_feature_values = []
+    good_gate_feature_values = []
+    faulty_gate_feature_values = []
 
-    for file in functioning_files:
-        functioning_feature_values.append(_get_feature_value(feature_type, file))
+    for file in good_gate_files:
+        good_gate_feature_values.append(_get_feature_value(feature_type, file))
 
-    for file in faulty_files:
-        faulty_feature_values.append(_get_feature_value(feature_type, file))
+    for file in faulty_gate_files:
+        faulty_gate_feature_values.append(_get_feature_value(feature_type, file))
     
-    plot_one_dim("Func gates", functioning_feature_values, functioning_files, "Faulty gates", faulty_feature_values, faulty_files, feature_type)
+    plot_one_dim("Func gates", good_gate_feature_values, good_gate_files, "Faulty gates", faulty_gate_feature_values, faulty_gate_files, feature_type)
     
-def plot_two_features(feature_1_type: str, feature_2_type: str, num_of_functioning_files, num_of_faulty_files):
+def plot_two_features(feature_1_type: str, feature_2_type: str,  num_of_good_gate_files, num_of_faulty_gate_files):
     """Feature type is a string thats defined to specify a certain feature. If you wish to add a new type. Simply implement it in the match case in the _get_feature_value function"""       
 
-    functioning_files, faulty_files = get_files(num_of_functioning_files, num_of_faulty_files)
+    good_gate_files, faulty_gate_files = get_files( num_of_good_gate_files, num_of_faulty_gate_files)
 
     functioning_feature_1_values = []
     faulty_feature_1_values = []
@@ -243,28 +243,28 @@ def plot_two_features(feature_1_type: str, feature_2_type: str, num_of_functioni
     functioning_feature_2_values = []
     faulty_feature_2_values = []
 
-    for file in functioning_files:
+    for file in good_gate_files:
         functioning_feature_1_values.append(_get_feature_value(feature_1_type, file))
         functioning_feature_2_values.append(_get_feature_value(feature_2_type, file))
 
-    for file in faulty_files:
+    for file in faulty_gate_files:
         faulty_feature_1_values.append(_get_feature_value(feature_1_type, file))
         faulty_feature_2_values.append(_get_feature_value(feature_2_type, file))
 
-    combinded_functioning_feature_values = np.vstack((functioning_feature_1_values, functioning_feature_2_values)).T
+    combinded_good_gate_feature_values = np.vstack((functioning_feature_1_values, functioning_feature_2_values)).T
 
-    combinded_faulty_feature_values = np.vstack((faulty_feature_1_values, faulty_feature_2_values)).T
+    combinded_faulty_gate_feature_values = np.vstack((faulty_feature_1_values, faulty_feature_2_values)).T
 
-    plot_two_dim("Func gates", combinded_functioning_feature_values, functioning_files, "Faulty gates", combinded_faulty_feature_values, faulty_files, feature_1_type, feature_2_type)
+    plot_two_dim("Func gates", combinded_good_gate_feature_values, good_gate_files, "Faulty gates", combinded_faulty_gate_feature_values, faulty_gate_files, feature_1_type, feature_2_type)
 
 def main():
     parser = create_arg_parser()
     args = parser.parse_args()
 
     if len(args.features) == 1:
-        plot_one_feature(args.features[0], args.good_files, args.faulty_files)
+        plot_one_feature(args.features[0], args.good_files, args.faulty_gate_files)
     elif len(args.features) == 2:
-        plot_two_features(args.features[0], args.features[1], args.good_files, args.faulty_files)
+        plot_two_features(args.features[0], args.features[1], args.good_files, args.faulty_gate_files)
     else:
         parser.print_help()
 

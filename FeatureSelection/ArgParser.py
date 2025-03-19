@@ -23,7 +23,7 @@ def create_arg_parser():
     """
     Create an argument parser with the following options:
     - good_files: Number of good files to process (0-1000)
-    - faulty_files: Number of faulty files to process (0-1000)
+    - faulty_gate_files: Number of faulty files to process (0-1000)
     - features: Feature(s) to process, control if the feature(s) is 
         valid according to match case in FeaturePlotting.py
     """
@@ -38,7 +38,7 @@ def create_arg_parser():
         help="Number of good files to process (0-1000)"
     )
     parser.add_argument(
-        "--faulty_files", type=check_num_files, required=True,
+        "--faulty_gate_files", type=check_num_files, required=True,
         help="Number of faulty files to process (0-1000)"
     )
     parser.add_argument(
