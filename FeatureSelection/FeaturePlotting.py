@@ -262,9 +262,9 @@ def main():
     args = parser.parse_args()
 
     if len(args.features) == 1:
-        plot_one_feature(args.features[0], args.good_files, args.faulty_gate_files)
+        plot_one_feature(args.features[0], args.good_gate_files, args.faulty_gate_files)
     elif len(args.features) == 2:
-        plot_two_features(args.features[0], args.features[1], args.good_files, args.faulty_gate_files)
+        plot_two_features(args.features[0], args.features[1], args.good_gate_files, args.faulty_gate_files)
     else:
         parser.print_help()
 

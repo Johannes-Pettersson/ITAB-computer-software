@@ -34,7 +34,7 @@ def create_arg_parser():
     )
 
     parser.add_argument(
-        "--good_files", type=check_num_files, required=True,
+        "--good_gate_files", type=check_num_files, required=True,
         help="Number of good files to process (0-1000)"
     )
     parser.add_argument(
