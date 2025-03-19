@@ -53,8 +53,7 @@ def plot_one_dim(data1_title, data1, data1_labels, data2_title, data2, data2_lab
     y2 = np.ones(len(data2))*-1
 
     fig, ax = plt.subplots()
-    mng = plt.get_current_fig_manager()
-    mng.full_screen_toggle()
+    fig.set_size_inches(15,8)
 
     sc1 = ax.scatter(data1, y1, color=data1_color, label=data1_title, picker=True)
     sc2 = ax.scatter(data2, y2, color=data2_color, label=data2_title, picker=True)
@@ -102,8 +101,7 @@ def plot_two_dim(data1_title, data1, data1_labels, data2_title, data2, data2_lab
     x2, y2 = data2[:, 0], data2[:, 1]
 
     fig, ax = plt.subplots()
-    mng = plt.get_current_fig_manager()
-    mng.full_screen_toggle()
+    fig.set_size_inches(15, 8)
 
     sc1 = ax.scatter(x1, y1, color=data1_color, label=data1_title, picker=True)
     sc2 = ax.scatter(x2, y2, color=data2_color, label=data2_title, picker=True)
@@ -139,7 +137,7 @@ def plot_two_dim(data1_title, data1, data1_labels, data2_title, data2, data2_lab
 
     fig.canvas.mpl_connect("motion_notify_event", on_hover)
 
-    plt.show()
+    plt.savefig(fr"C:\Users\johan\OneDrive - Jonkoping University\DIS3\Examensarbete\Feature prestudy images\evaluation\{xlabel}\{xlabel}_{ylabel}")
 
 def _get_feature_value(feature_type, file):
     match feature_type:
@@ -278,15 +276,25 @@ def plot_two_features(feature_1_type: str, feature_2_type: str,  num_of_good_gat
     plot_two_dim("Func gates", combinded_good_gate_feature_values, good_gate_files, "Faulty gates", combinded_faulty_gate_feature_values, faulty_gate_files, feature_1_type, feature_2_type)
 
 def main():
-    parser = create_arg_parser()
-    args = parser.parse_args()
+    feat1 = "sb_mean"
+    feat_list = ["ae_max", "sc_ptp", "mfcc_skewness", "sb_max", "ber_min", "sc_deriv_min", "sc_max", "zcr_std", "ro_mean", "ber_max", "ber_std", "ro_max", "zcr_max", "sc_deriv_max", "ro_min"]
 
-    if len(args.features) == 1:
-        plot_one_feature(args.features[0], args.good_gate_files, args.faulty_gate_files)
-    elif len(args.features) == 2:
-        plot_two_features(args.features[0], args.features[1], args.good_gate_files, args.faulty_gate_files)
-    else:
-        parser.print_help()
+    while len(feat_list) > 0:
+        for feat in feat_list:
+            plot_two_features(feature_1_type=feat1, feature_2_type=feat, num_of_good_gate_files=700, num_of_faulty_gate_files=700)
+            print(f"done with {feat1}_{feat}")
+
+        feat1 = feat_list.pop(0)
+    
+    # parser = create_arg_parser()
+    # args = parser.parse_args()
+
+    # if len(args.features) == 1:
+    #     plot_one_feature(args.features[0], args.good_gate_files, args.faulty_gate_files)
+    # elif len(args.features) == 2:
+    #     plot_two_features(args.features[0], args.features[1], args.good_gate_files, args.faulty_gate_files)
+    # else:
+    #     parser.print_help()
 
 # Exampleusage plot_two_dim
 # test1 = np.random.rand(10) * 100
