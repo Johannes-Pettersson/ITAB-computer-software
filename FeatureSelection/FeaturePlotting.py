@@ -37,10 +37,10 @@ def get_files( num_of_good_gate_files, num_of_faulty_gate_files):
                 faulty_gate_files.append(entry.path)    
 
     while(len(good_gate_files) >  num_of_good_gate_files):
-        good_gate_files.pop(random.randrange(len(good_gate_files)))
+        good_gate_files.pop()
 
     while(len(faulty_gate_files) > num_of_faulty_gate_files):
-        faulty_gate_files.pop(random.randrange(len(faulty_gate_files)))
+        faulty_gate_files.pop()
 
     return good_gate_files, faulty_gate_files
 
