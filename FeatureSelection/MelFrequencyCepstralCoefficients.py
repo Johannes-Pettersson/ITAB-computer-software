@@ -38,28 +38,29 @@ def calculate_values(file, hop_length=512, coef=1, dct_type=4):
     mfcc_skewness = np.float32(mfcc_skewness.item())
     mfcc_kurtosis = scipy.stats.kurtosis(mfcc_subset, axis=1).astype(np.float32)
     mfcc_kurtosis = np.float32(mfcc_kurtosis.item())
-    # print(f"coef: {coef}, dct_type: {dct_type}, kurtosis: {mfcc_kurtosis}")
     return y, sr, mfcc, mfcc_skewness, mfcc_kurtosis
 
-# Function to plot the statistical comparisons
-def plot_mfcc_comparison(ax, stats_gg, stats_fg, statistic, dct_type):
+def plot_mfcc_comparison(ax, stats_gg, stats_fg, statistic, dct_type, coef):
 
-    x_labels = ["MFCC 1", "MFCC 2"]  # Only comparing first two coefficients
-    x = np.arange(len(x_labels))  # X-axis positions
-    width = 0.35  # Bar width
+    x_labels = [f"Coefficient: {coef}"]
+    x = np.arange(len(x_labels))
+    width = 0.35
         
-    # Plot bars for good and faulty gates
-    ax.bar(x - width/2, stats_gg, width=width, label="Good Gates", color='blue')
-    ax.bar(x + width/2, stats_fg, width=width, label="Faulty Gates", color='red', alpha=0.7)
+    stats_gg = np.array(stats_gg).flatten()
+    stats_fg = np.array(stats_fg).flatten()
 
-    # Formatting
+    print(f"stats_gg: {stats_gg}")
+    print(f"stats_fg: {stats_fg}")
+
+    ax.bar(x - width/2, stats_gg, width=width, label="Good Gate", color='blue')
+    ax.bar(x + width/2, stats_fg, width=width, label="Faulty Gate", color='red', alpha=0.7)
+
     ax.set_xticks(x)
     ax.set_xticklabels(x_labels)
     ax.set_ylabel(statistic.capitalize())
-    ax.set_title(f"DCT {dct_type}: {statistic.capitalize()}")
+    ax.set_title(f"DCT: {dct_type}")
     ax.legend()
 
-# Main function
 def main():
     files = [
         "../Recording/Functioning_gate_recordings/Day 2/Session 1/G_G_1.WAV",
@@ -70,6 +71,7 @@ def main():
     dct_type = 3
     coef = 2
     hop_length = 512
+    statistics = ["skewness", "kurtosis"]
 
     audio_data = [calculate_values(file=file, hop_length=hop_length, coef=coef, dct_type=dct_type) for file in files]
     
@@ -88,8 +90,8 @@ def main():
     mfcc_gg_kurtosis = audio_data[0][4]
     mfcc_fg_kurtosis = audio_data[1][4]
 
-    plot_mfcc_comparison(axes[1, 0], mfcc_gg_skewness, mfcc_fg_skewness, "skewness", dct_type)
-    plot_mfcc_comparison(axes[1, 1], mfcc_gg_kurtosis, mfcc_fg_kurtosis, "kurtosis", dct_type)
+    plot_mfcc_comparison(axes[1, 0], mfcc_gg_skewness, mfcc_fg_skewness, statistics[0], dct_type, coef)
+    plot_mfcc_comparison(axes[1, 1], mfcc_gg_kurtosis, mfcc_fg_kurtosis, statistics[1], dct_type, coef)
 
     plt.tight_layout()
     plt.show()
