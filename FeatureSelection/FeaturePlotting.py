@@ -236,39 +236,6 @@ def _get_feature_value(feature_type, file):
         case "mfcc_kurtosis":
             _, _, _, _, mfcc_kurtosis = mfcc_calculate_values(file, coef=1, dct_type=4)
             return mfcc_kurtosis
-        case "sb_max":
-            _, _, _, _, _, sb_max, _, _ = sb_calculate_values(file)
-            return sb_max
-        case "sb_min":
-            _, _, _, sb_min, _, _, _, _ = sb_calculate_values(file)
-            return sb_min
-        case "sb_ptp":
-            _, _, _, _, sb_ptp, _, _, _ = sb_calculate_values(file)
-            return sb_ptp
-        case "sb_mean":
-             _, _, _, _, _, _, sb_mean, _ = sb_calculate_values(file)
-             return sb_mean
-        case "sb_std":
-            _, _, _, _, _, _, _, sb_std = sb_calculate_values(file)
-            return sb_std
-        case "ro_max":
-            _, _, _, _, ro_max, _, _, _ = ro_calculate_values(file=file, roll_percent=.37)
-            return ro_max
-        case "ro_min":
-            _, _, _, _, _, ro_min, _, _ = ro_calculate_values(file=file, roll_percent=.37)
-            return ro_min
-        case "ro_mean":
-            _, _, _, _, _, _, ro_mean, _ = ro_calculate_values(file=file, roll_percent=.37)
-            return ro_mean    
-        case "ro_std":
-            _, _, _, _, _, _, _, ro_std = ro_calculate_values(file=file, roll_percent=.37)
-            return ro_std
-        case "mfcc_skewness":
-            _, _, _, mfcc_skewness, _ = mfcc_calculate_values(file, coef=1, dct_type=4)
-            return mfcc_skewness
-        case "mfcc_kurtosis":
-            _, _, _, _, mfcc_kurtosis = mfcc_calculate_values(file, coef=1, dct_type=4)
-            return mfcc_kurtosis
         case default:
             raise Exception("Feature_type not defined")
 
