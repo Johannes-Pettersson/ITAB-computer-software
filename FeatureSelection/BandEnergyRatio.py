@@ -21,15 +21,18 @@ def band_energy_ratio(spectrogram, split_frequency, sample_rate):
     
     return np.array(band_energy_ratio)
 
-def calculate_values(file):
+def calculate_values(file, split_frequency):
     y, sr = librosa.load(file)
     S, phase = librosa.magphase(librosa.stft(y))
     
-    b_e_ratio = band_energy_ratio(S, 1000, sr)
+    b_e_ratio = band_energy_ratio(S, split_frequency, sr)
 
-    print(f"Band energy ratio: {b_e_ratio}")
+    ber_max = max(b_e_ratio)
+    ber_min = min(b_e_ratio)
+    ber_mean = np.mean(b_e_ratio)
+    ber_std = np.std(b_e_ratio)
 
-    return y, sr, S, b_e_ratio
+    return y, sr, S, b_e_ratio, ber_max, ber_min, ber_mean, ber_std
 
 
 def calculate_split_frequency_bin(split_frequency, sample_rate, num_frequency_bins):
@@ -40,9 +43,9 @@ def calculate_split_frequency_bin(split_frequency, sample_rate, num_frequency_bi
     split_frequency_bin = np.floor(split_frequency / frequency_delta_per_bin)
     return int(split_frequency_bin)
 
-def plot_file(file, col, axes, hop_length):
+def plot_file(file, col, axes, hop_length, split_frequency):
 
-    y, sr, S, b_e_ratio = calculate_values(file)
+    y, sr, S, b_e_ratio, _, _, _, _ = calculate_values(file, split_frequency)
 
     S_db = librosa.amplitude_to_db(S, ref=np.max)
 
@@ -53,7 +56,8 @@ def plot_file(file, col, axes, hop_length):
 
     times = librosa.times_like(b_e_ratio, sr=sr, hop_length=hop_length)
 
-    axes[1, col].plot(times, b_e_ratio, label="Band Energy Ratio")
+    axes[1, col].plot(times, b_e_ratio, label=f"Split Frequency: {split_frequency}")
+    axes[1, col].legend(loc="upper right")
     axes[1, col].set_xlabel("Time (s)")
     axes[1, col].set_ylabel("BER")
 
@@ -74,7 +78,7 @@ def main():
     fig, axes = plt.subplots(nrows=2, ncols=len(faulty_files)+ len(functioning_files), figsize=(12, 8), sharex=True, sharey=False)
 
     for i, file in enumerate(faulty_files + functioning_files):
-        plot_file(file, i, axes=axes, hop_length=HOP_SIZE)
+        plot_file(file, i, axes=axes, hop_length=HOP_SIZE, split_frequency=2000)
 
 
     # Sync axels of b_e_ratio plots

@@ -8,6 +8,7 @@ from ZeroCrossingRate import calculate_values as zcr_calculate_values
 from AmplitudeEnvelope import calculate_values as ae_calculate_values
 from SpectralBandwidth import calculate_values as sb_calculate_values
 from SpectralRolloff import calculate_values as ro_calculate_values
+from BandEnergyRatio import calculate_values as ber_calculate_values
 from ArgParser import create_arg_parser
 
 def get_files( num_of_good_gate_files, num_of_faulty_gate_files):
@@ -213,6 +214,18 @@ def _get_feature_value(feature_type, file):
         case "ro_std":
             _, _, _, _, _, _, _, ro_std = ro_calculate_values(file=file, roll_percent=.37)
             return ro_std
+        case "ber_max":
+            _, _, _, _, ber_max, _, _, _ = ber_calculate_values(file, 1000)
+            return ber_max
+        case "ber_min":
+            _, _, _, _, _, ber_min, _, _ = ber_calculate_values(file, 1000)
+            return ber_min
+        case "ber_mean":
+            _, _, _, _, _, _, ber_mean, _ = ber_calculate_values(file, 1000)
+            return ber_mean
+        case "ber_std":
+            _, _, _, _, _, _, _, ber_std = ber_calculate_values(file, 1000)
+            return ber_std
         case default:
             raise Exception("Feature_type not defined")
 
