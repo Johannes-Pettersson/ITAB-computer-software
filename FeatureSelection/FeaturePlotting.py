@@ -6,10 +6,7 @@ from SpectralCentroid import calculate_values as sc_calculate_values
 from RootMeanSquareEnergy import calculate_values as rmse_calculate_values
 from ZeroCrossingRate import calculate_values as zcr_calculate_values
 from AmplitudeEnvelope import calculate_values as ae_calculate_values
-from SpectralBandwidth import calculate_values as sb_calculate_values
-from SpectralRolloff import calculate_values as ro_calculate_values
 from BandEnergyRatio import calculate_values as ber_calculate_values
-from MelFrequencyCepstralCoefficients import calculate_values as mfcc_calculate_values
 from SpectralBandwidth import calculate_values as sb_calculate_values
 from SpectralRolloff import calculate_values as ro_calculate_values
 from MelFrequencyCepstralCoefficients import calculate_values as mfcc_calculate_values
