@@ -4,11 +4,11 @@ import numpy as np
 import sounddevice as sd
 from scipy.signal import savgol_filter
 
-faulty_files = [
+faulty_gate_files = [
     "../Recording/Faulty_gate_recordings/Day 1/Session 1/B_G_1.WAV"
 ]
 
-functioning_files = [
+good_gate_files = [
     "../Recording/Functioning_gate_recordings/Day 2/Session 2/G_G_176.WAV"
 ]
 
@@ -60,9 +60,9 @@ def plot_file(file, row, col, axes):
     ax_deriv.set_title(f"Max: {max_deriv:.0f}, Min: {min_deriv:.0f}")
 
 def main():
-    fig, axes = plt.subplots(nrows=2, ncols=len(faulty_files)+ len(functioning_files), figsize=(12, 8), sharex=True, sharey=False)
+    fig, axes = plt.subplots(nrows=2, ncols=len(faulty_gate_files)+ len(good_gate_files), figsize=(12, 8), sharex=True, sharey=False)
 
-    for i, file in enumerate(faulty_files + functioning_files):
+    for i, file in enumerate(faulty_gate_files + good_gate_files):
         plot_file(file, 0, i, axes=axes)
 
 
@@ -85,7 +85,7 @@ def main():
     plt.tight_layout()
     plt.show()
 
-    # y, sr = librosa.load(faulty_files[0])
+    # y, sr = librosa.load(faulty_gate_files[0])
 
     # sd.play(y, sr)
     # sd.wait()
