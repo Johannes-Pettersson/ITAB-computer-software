@@ -138,6 +138,7 @@ def plot_two_dim(data1_title, data1, data1_labels, data2_title, data2, data2_lab
     fig.canvas.mpl_connect("motion_notify_event", on_hover)
 
     plt.savefig(fr"C:\Users\johan\OneDrive - Jonkoping University\DIS3\Examensarbete\Feature prestudy images\evaluation\{xlabel}\{xlabel}_{ylabel}")
+    plt.close()
 
 def _get_feature_value(feature_type, file):
     match feature_type:

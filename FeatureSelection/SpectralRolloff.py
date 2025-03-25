@@ -10,8 +10,8 @@ def calculate_values(file, roll_percent=.37):
 
     rolloff = librosa.feature.spectral_rolloff(S=S, sr=sr, roll_percent=roll_percent)
 
-    ro_max = np.amax(rolloff)
-    ro_min = np.amin(rolloff)
+    ro_max = np.max(rolloff.T)
+    ro_min = np.min(rolloff.T)
     ro_mean = np.mean(rolloff)
     ro_std = np.std(rolloff)
     
