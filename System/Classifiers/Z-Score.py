@@ -1,6 +1,8 @@
 import numpy as np
-from  Features.RootMeanSquareEnergy import calculate_values as rmse_calculate_values
 import os
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from Features.RootMeanSquareEnergy import calculate_values as rmse_calculate_values
 
 def get_files(num_of_good_gate_files, num_of_faulty_gate_files):
     good_gate_files = []
