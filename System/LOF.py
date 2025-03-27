@@ -3,32 +3,61 @@ from sklearn.neighbors import LocalOutlierFactor
 import matplotlib.pyplot as plt
 
 
-# Generate random datar
-data_set = np.random.randn(100,2)
-#test_point = np.array([15,12])
+def calc_lof(data: np.ndarray, data_point, n_neighbors=20) -> bool:
+    "Calculate if the data_point is a outlier. True == Outlier, False == Non-Outlier"
+    estimator = LocalOutlierFactor(n_neighbors=n_neighbors)
 
-estimator = LocalOutlierFactor(n_neighbors=20)
-
-full_data = np.vstack([data_set]) #,test_point])
-labels = estimator.fit_predict(full_data)
+    labels = estimator.fit_predict(np.vstack([data, data_point]))
+    return labels[-1] == -1
 
 
-X_scores = estimator.negative_outlier_factor_
-outlier_colors = [(1,0,0,0.5) if label == -1 else (0,0,0,0) for label in labels]
+def calc_and_plot_lof(data: np.ndarray, data_point=None, n_neighbors=20):
+    estimator = LocalOutlierFactor(n_neighbors=n_neighbors)
 
-plt.scatter(data_set[:, 0], data_set[:, 1], color="k", s=3.0, label="Data points")
+    labels = None
+    if data_point is not None:
+        data = np.vstack([data, data_point])
+
+    labels = estimator.fit_predict(data)
+
+    if labels is None:
+        raise Exception("Labels didn't get a value")
+
+    X_scores = estimator.negative_outlier_factor_
 
 
-# plot circles with radius proportional to the outlier scores
-radius = (X_scores.max() - X_scores) / (X_scores.max() - X_scores.min())
-scatter = plt.scatter(
-    data_set[:, 0],
-    data_set[:, 1],
-    s=1000 * radius,
-    edgecolors="r",
-    facecolors=outlier_colors,
-    label="Outlier scores",
-)
-plt.axis("tight")
-plt.title("Local Outlier Factor (LOF)")
-plt.show()
+    if data_point is not None:
+        dot_colors = ["k" if i < len(labels)-1 else "g" for i in range(len(labels))]
+        plt.scatter(data[:, 0], data[:, 1], color=dot_colors, s=3.0)
+    else:
+        plt.scatter(data[:, 0], data[:, 1], color="k", s=3.0)
+
+    perimiter_colors = [(1,0,0,0.5) if label == -1 else (0,0,0,0) for label in labels]
+    if perimiter_colors[-1] != (0,0,0,0):
+        perimiter_colors[-1] = (0,1,0,0.5)
+
+    radius = (X_scores.max() - X_scores) / (X_scores.max() - X_scores.min())
+    plt.scatter(
+        data[:, 0],
+        data[:, 1],
+        s=1000 * radius,
+        edgecolors=["r"if i < len(data)-1 else "g" for i in range(len(data))],
+        facecolors=perimiter_colors,
+        label="Outlier scores",
+    )
+
+    plt.axis("tight")
+    if data_point is not None:
+        plt.title(f"LOF. Outlier? -> {labels[-1] == -1}")
+    else:
+        plt.title("LOF")
+    plt.show()
+
+def main():
+
+    data_set = np.random.randn(100,2)
+    calc_and_plot_lof(data_set[:-1], data_set[-1])
+
+
+if __name__ == "__main__":
+    main()
