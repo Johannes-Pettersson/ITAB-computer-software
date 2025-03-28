@@ -1,7 +1,7 @@
 import numpy as np
 import os
 import sys
-
+import matplotlib.pyplot as plt
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))) # Add the path to the root folder of the git repository
 from FeatureSelection.RootMeanSquareEnergy import calculate_values as rmse_calculate_values # type: ignore
@@ -28,21 +28,48 @@ class ZScore:
         self.std_dev_x = np.std(training_data[0])
         self.std_dev_y = np.std(training_data[1])
 
-    def predict(self, x: np.ndarray):
+    def predict(self, data_point: np.ndarray) -> bool:
         """Calculates z_score of input values, compares this value to threshold. Returns True if the z_score is within the threshold, False otherwise."""
         if self.mean_x is None or self.std_dev_x is None or self.mean_y is None or self.std_dev_y is None:
             raise ValueError("The model has not been trained")
 
-        if x.ndim != 2:
-            raise ValueError(f"The input data must be a 2D array, data input is {x.ndim}D")
+        if data_point.ndim != 2:
+            raise ValueError(f"The input data must be a 2D array, data input is {data_point.ndim}D")
 
-        z_score_x = (x[0] - self.mean_x) / self.std_dev_x
-        z_score_y = (x[1] - self.mean_y) / self.std_dev_y
+        z_score_x = (data_point[0] - self.mean_x) / self.std_dev_x
+        z_score_y = (data_point[1] - self.mean_y) / self.std_dev_y
 
         predict_x = abs(z_score_x) <= self.threshold_x
         predict_y = abs(z_score_y) <= self.threshold_y
         
         return predict_x and predict_y
+
+def plot_z_score(training_data: np.ndarray, data_point: np.ndarray):
+    """Plots the training data and the data point with the z-score radius."""
+    if training_data.ndim != 2:
+        raise ValueError(f"The training data must be a 2D array, data input is {training_data.ndim}D")
+
+    if data_point.ndim != 2:
+        raise ValueError(f"The input data must be a 2D array, data input is {data_point.ndim}D")
+
+    mean_x = np.mean(training_data[0])
+    mean_y = np.mean(training_data[1])
+    std_dev_x = np.std(training_data[0])
+    std_dev_y = np.std(training_data[1])
+    z_score_training_x = (training_data[0] - mean_x) / std_dev_x
+    z_score_training_y = (training_data[1] - mean_y) / std_dev_y
+
+    z_score_other_x = (data_point[0] - mean_x) / std_dev_x
+    z_score_other_y = (data_point[1] - mean_y) / std_dev_y
+
+    plt.scatter(z_score_training_x, z_score_training_y, color="g", s=5.0)
+    plt.scatter(z_score_other_x, z_score_other_y, color="b", s=5.0)
+    # Set threshold lines to 3.0 standard deviations
+    plt.axvline(x=3.0, color="r", linestyle="--")
+    plt.axvline(x=-3.0, color="r", linestyle="--")
+    plt.axhline(y=3.0, color="r", linestyle="--")
+    plt.axhline(y=-3.0, color="r", linestyle="--")
+    plt.show()
 
 def get_files(num_of_good_gate_files, num_of_faulty_gate_files):
     good_gate_files = []
@@ -110,6 +137,7 @@ def main():
         another_input_data[0, i] = mfcc_skewness
         another_input_data[1, i] = zcr_mean_val
 
+    plot_z_score(train_data, another_input_data)
     z_score = ZScore()
     z_score.train(train_data)
 
