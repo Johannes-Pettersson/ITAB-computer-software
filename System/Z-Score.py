@@ -62,13 +62,16 @@ def plot_z_score(training_data: np.ndarray, data_point: np.ndarray):
     z_score_other_x = (data_point[0] - mean_x) / std_dev_x
     z_score_other_y = (data_point[1] - mean_y) / std_dev_y
 
-    plt.scatter(z_score_training_x, z_score_training_y, color="g", s=5.0)
-    plt.scatter(z_score_other_x, z_score_other_y, color="b", s=5.0)
+    plt.scatter(z_score_training_x, z_score_training_y, color="g", s=20.0, label="Training")
+    plt.scatter(z_score_other_x, z_score_other_y, color="b", s=20.0, label="Input Data")
+    
     # Set threshold lines to 3.0 standard deviations
     plt.axvline(x=3.0, color="r", linestyle="--")
     plt.axvline(x=-3.0, color="r", linestyle="--")
     plt.axhline(y=3.0, color="r", linestyle="--")
     plt.axhline(y=-3.0, color="r", linestyle="--")
+
+    plt.legend(loc="upper right")
     plt.show()
 
 def get_files(num_of_good_gate_files, num_of_faulty_gate_files):
@@ -137,7 +140,7 @@ def main():
         another_input_data[0, i] = mfcc_skewness
         another_input_data[1, i] = zcr_mean_val
 
-    plot_z_score(train_data, another_input_data)
+    plot_z_score(train_data, input_data)
     z_score = ZScore()
     z_score.train(train_data)
 
