@@ -2,14 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import random
-from SpectralCentroid import calculate_values as sc_calculate_values
-from RootMeanSquareEnergy import calculate_values as rmse_calculate_values
-from ZeroCrossingRate import calculate_values as zcr_calculate_values
-from AmplitudeEnvelope import calculate_values as ae_calculate_values
-from BandEnergyRatio import calculate_values as ber_calculate_values
-from SpectralBandwidth import calculate_values as sb_calculate_values
-from SpectralRolloff import calculate_values as ro_calculate_values
-from MelFrequencyCepstralCoefficients import calculate_values as mfcc_calculate_values
+from GetFeatureValue import get_feature_value
 from ArgParser import create_arg_parser
 
 def get_files( num_of_good_gate_files, num_of_faulty_gate_files):
@@ -28,14 +21,14 @@ def get_files( num_of_good_gate_files, num_of_faulty_gate_files):
     ]
 
     for dir in functioning_directories:
-        for entry in os.scandir(dir):  
+        for entry in os.scandir(dir):
             if entry.is_file():
                 good_gate_files.append(entry.path)
 
     for dir in faulty_directories:
-        for entry in os.scandir(dir):  
+        for entry in os.scandir(dir):
             if entry.is_file():
-                faulty_gate_files.append(entry.path)    
+                faulty_gate_files.append(entry.path)
 
     while(len(good_gate_files) >  num_of_good_gate_files):
         good_gate_files.pop()
@@ -141,119 +134,24 @@ def plot_two_dim(data1_title, data1, data1_labels, data2_title, data2, data2_lab
 
     plt.show()
 
-def _get_feature_value(feature_type, file):
-    match feature_type:
-        case "sc_min":
-            _, _, _, min_val, _, _, _, _, _ = sc_calculate_values(file)
-            return min_val
-        case "sc_max":
-            _, _, _, _, max_val, _, _, _, _ = sc_calculate_values(file)
-            return max_val
-        case "sc_ptp":
-            _, _, _, _, _, ptp_val, _, _, _ = sc_calculate_values(file)
-            return ptp_val
-        case "sc_deriv_max":
-            _, _, _, _, _, _, _, max_deriv, _ = sc_calculate_values(file)
-            return max_deriv
-        case "sc_deriv_min":
-            _, _, _, _, _, _, _, _, min_deriv = sc_calculate_values(file)
-            return min_deriv
-        case "rmse_mean":
-            _, _, _, _, mean_val, _, _ = rmse_calculate_values(file)
-            return mean_val
-        case "rmse_max":
-            _, _, _, _, _, max_val, _ = rmse_calculate_values(file)
-            return max_val
-        case "rmse_std":
-            _, _, _, _, _, _, std_val = rmse_calculate_values(file)
-            return std_val
-        case "zcr_total":
-            _, _, _, total_val, _, _, _, _ = zcr_calculate_values(file)
-            return total_val
-        case "zcr_mean":
-            _, _, _, _, _, mean_val, _, _ = zcr_calculate_values(file)
-            return mean_val
-        case "zcr_max":
-            _, _, _, _, _, _, max_val, _ = zcr_calculate_values(file)
-            return max_val
-        case "zcr_std":
-            _, _, _, _, _, _, _, std_val = zcr_calculate_values(file)
-            return std_val
-        case "ae_mean":
-            _, _, _, _, mean_val, _, _ = ae_calculate_values(file)
-            return mean_val
-        case "ae_max":
-            _, _, _, _, _, max_val, _ = ae_calculate_values(file)
-            return max_val
-        case "ae_std":
-            _, _, _, _, _, _, std_val = ae_calculate_values(file)
-            return std_val
-        case "sb_max":
-            _, _, _, _, _, sb_max, _, _ = sb_calculate_values(file)
-            return sb_max
-        case "sb_min":
-            _, _, _, sb_min, _, _, _, _ = sb_calculate_values(file)
-            return sb_min
-        case "sb_ptp":
-            _, _, _, _, sb_ptp, _, _, _ = sb_calculate_values(file)
-            return sb_ptp
-        case "sb_mean":
-             _, _, _, _, _, _, sb_mean, _ = sb_calculate_values(file)
-             return sb_mean
-        case "sb_std":
-            _, _, _, _, _, _, _, sb_std = sb_calculate_values(file)
-            return sb_std
-        case "ro_max":
-            _, _, _, _, ro_max, _, _, _ = ro_calculate_values(file=file, roll_percent=.37)
-            return ro_max
-        case "ro_min":
-            _, _, _, _, _, ro_min, _, _ = ro_calculate_values(file=file, roll_percent=.37)
-            return ro_min
-        case "ro_mean":
-            _, _, _, _, _, _, ro_mean, _ = ro_calculate_values(file=file, roll_percent=.37)
-            return ro_mean    
-        case "ro_std":
-            _, _, _, _, _, _, _, ro_std = ro_calculate_values(file=file, roll_percent=.37)
-            return ro_std
-        case "ber_max":
-            _, _, _, _, ber_max, _, _, _ = ber_calculate_values(file, 1000)
-            return ber_max
-        case "ber_min":
-            _, _, _, _, _, ber_min, _, _ = ber_calculate_values(file, 1000)
-            return ber_min
-        case "ber_mean":
-            _, _, _, _, _, _, ber_mean, _ = ber_calculate_values(file, 1000)
-            return ber_mean
-        case "ber_std":
-            _, _, _, _, _, _, _, ber_std = ber_calculate_values(file, 1000)
-            return ber_std
-        case "mfcc_skewness":
-            _, _, _, mfcc_skewness, _ = mfcc_calculate_values(file, coef=1, dct_type=4)
-            return mfcc_skewness
-        case "mfcc_kurtosis":
-            _, _, _, _, mfcc_kurtosis = mfcc_calculate_values(file, coef=1, dct_type=4)
-            return mfcc_kurtosis
-        case default:
-            raise Exception("Feature_type not defined")
-
 def plot_one_feature(feature_type: str,  num_of_good_gate_files, num_of_faulty_gate_files):
-    """Feature type is a string thats defined to specify a certain feature. If you wish to add a new type. Simply implement it in the match case in the _get_feature_value function"""       
-    
+    """Feature type is a string thats defined to specify a certain feature. If you wish to add a new type. Simply implement it in the match case in the get_feature_value function"""
+
     good_gate_files, faulty_gate_files = get_files( num_of_good_gate_files, num_of_faulty_gate_files)
 
     good_gate_feature_values = []
     faulty_gate_feature_values = []
 
     for file in good_gate_files:
-        good_gate_feature_values.append(_get_feature_value(feature_type, file))
+        good_gate_feature_values.append(get_feature_value(feature_type, file))
 
     for file in faulty_gate_files:
-        faulty_gate_feature_values.append(_get_feature_value(feature_type, file))
-    
+        faulty_gate_feature_values.append(get_feature_value(feature_type, file))
+
     plot_one_dim("Func gates", good_gate_feature_values, good_gate_files, "Faulty gates", faulty_gate_feature_values, faulty_gate_files, feature_type)
-    
+
 def plot_two_features(feature_1_type: str, feature_2_type: str,  num_of_good_gate_files, num_of_faulty_gate_files):
-    """Feature type is a string thats defined to specify a certain feature. If you wish to add a new type. Simply implement it in the match case in the _get_feature_value function"""       
+    """Feature type is a string thats defined to specify a certain feature. If you wish to add a new type. Simply implement it in the match case in the get_feature_value function"""
 
     good_gate_files, faulty_gate_files = get_files( num_of_good_gate_files, num_of_faulty_gate_files)
 
@@ -264,12 +162,12 @@ def plot_two_features(feature_1_type: str, feature_2_type: str,  num_of_good_gat
     faulty_feature_2_values = []
 
     for file in good_gate_files:
-        functioning_feature_1_values.append(_get_feature_value(feature_1_type, file))
-        functioning_feature_2_values.append(_get_feature_value(feature_2_type, file))
+        functioning_feature_1_values.append(get_feature_value(feature_1_type, file))
+        functioning_feature_2_values.append(get_feature_value(feature_2_type, file))
 
     for file in faulty_gate_files:
-        faulty_feature_1_values.append(_get_feature_value(feature_1_type, file))
-        faulty_feature_2_values.append(_get_feature_value(feature_2_type, file))
+        faulty_feature_1_values.append(get_feature_value(feature_1_type, file))
+        faulty_feature_2_values.append(get_feature_value(feature_2_type, file))
 
     combinded_good_gate_feature_values = np.vstack((functioning_feature_1_values, functioning_feature_2_values)).T
 
@@ -295,7 +193,7 @@ def main():
 
 # Exampleusage plot_two_dim
 # test1 = np.random.rand(100, 2) * 4
-# test2 = (np.random.rand(100, 2) * 4) +6  
+# test2 = (np.random.rand(100, 2) * 4) +6
 # plot_two_dim(data1=test1, data1_title="Functioning", data1_labels=[f"Point {i} test1" for i in range(len(test1))], data2=test2, data2_title="Faulty", data2_labels=[f"Point {i} test2" for i in range(len(test1))], xlabel="Feature 1", ylabel="Feature 2")
 
 if __name__ == "__main__":

@@ -15,7 +15,7 @@ def check_num_args(features):
     return features
 
 def extract_feature_names():
-    with open("FeaturePlotting.py", "r") as f:
+    with open("GetFeatureValue.py", "r") as f:
         code = f.read()
     return set(re.findall(r'case\s+"(.*?)":', code))
 
