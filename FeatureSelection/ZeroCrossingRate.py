@@ -1,10 +1,5 @@
 import librosa
-import librosa.display
 import numpy as np
-import matplotlib.pyplot as plt
-import os
-import random
-
 
 def calculate_values(file):
     """
@@ -47,6 +42,7 @@ def calculate_values(file):
     return y, sr, t, zcr_total_val, zcr, zcr_mean, zcr_max, zcr_std
 
 def main():
+    import matplotlib.pyplot as plt
     titles = [
         "../Recording/Functioning_gate_recordings/Day 2/Session 1/G_G_1.WAV",
         "../Recording/Functioning_gate_recordings/Day 2/Session 2/G_G_1.WAV",

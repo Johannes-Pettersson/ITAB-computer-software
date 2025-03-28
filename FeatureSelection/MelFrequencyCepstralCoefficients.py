@@ -1,7 +1,6 @@
 import librosa
 import numpy as np
 import scipy.stats
-import matplotlib.pyplot as plt
 
 def calculate_values(file, hop_length=512, coef=1, dct_type=4):
     """
@@ -62,6 +61,7 @@ def plot_mfcc_comparison(ax, stats_gg, stats_fg, statistic, dct_type, coef):
     ax.legend()
 
 def main():
+    import matplotlib.pyplot as plt
     files = [
         "../Recording/Functioning_gate_recordings/Day 2/Session 1/G_G_1.WAV",
         "../Recording/Faulty_gate_recordings/Day 2/Session 1/B_G_1.WAV",
