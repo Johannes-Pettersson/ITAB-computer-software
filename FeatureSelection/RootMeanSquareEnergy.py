@@ -50,8 +50,8 @@ def calculate_values(file):
 def main():
     import matplotlib.pyplot as plt
     titles = [
-        "../Recording/Functioning_gate_recordings/Day 2/Session 1/G_G_1.WAV",
-        "../Recording/Functioning_gate_recordings/Day 2/Session 2/G_G_1.WAV",
+        "../Recording/Functioning_gate_recordings/Day 2/Session 1/G_G_419.WAV",
+        "../Recording/Functioning_gate_recordings/Day 2/Session 1/G_G_357.WAV",
         "../Recording/Faulty_gate_recordings/Day 2/Session 1/B_G_1.WAV",
         "../Recording/Faulty_gate_recordings/Day 2/Session 2/B_G_1.WAV",
     ]

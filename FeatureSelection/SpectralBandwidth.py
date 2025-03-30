@@ -1,7 +1,7 @@
 import librosa
 import matplotlib.pyplot as plt
 import numpy as np
-import sounddevice as sd
+# import sounddevice as sd
 
 def calculate_values(file_path):
     """
@@ -73,7 +73,7 @@ def main():
     ]
 
     good_gate_files = [
-        "../Recording/Functioning_gate_recordings/Day 2/Session 2/G_G_23.WAV"
+        "../Recording/Functioning_gate_recordings/Day 2/Session 1/G_G_419.WAV"
     ]
 
     fig, axes = plt.subplots(nrows=2, ncols=len(faulty_gate_files) + len(good_gate_files), figsize=(12, 8), sharex=True)
