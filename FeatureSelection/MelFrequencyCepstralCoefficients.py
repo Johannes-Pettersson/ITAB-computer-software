@@ -63,13 +63,13 @@ def plot_mfcc_comparison(ax, stats_gg, stats_fg, statistic, dct_type, coef):
 def main():
     import matplotlib.pyplot as plt
     files = [
-        "../Recording/Functioning_gate_recordings/Day 2/Session 1/G_G_1.WAV",
-        "../Recording/Faulty_gate_recordings/Day 2/Session 1/B_G_1.WAV",
+        "../Recording/Functioning_gate_recordings/Day 2/Session 1/G_G_419.WAV",
+        "../Recording/Functioning_gate_recordings/Day 2/Session 1/G_G_357.WAV",
     ]
 
     # Parameters
     dct_type = 3
-    coef = 2
+    coef = 1
     hop_length = 512
     statistics = ["skewness", "kurtosis"]
 

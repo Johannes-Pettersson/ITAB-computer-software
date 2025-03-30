@@ -1,7 +1,7 @@
 import librosa
 import matplotlib.pyplot as plt
 import numpy as np
-import sounddevice as sd
+# import sounddevice as sd
 
 def calculate_values(file, roll_percent=.37):
     y, sr = librosa.load(file)
