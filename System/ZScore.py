@@ -22,7 +22,9 @@ class ZScore:
         """Calculates and sets the mean and standard deviation of the training data."""
         if training_data.ndim != 2:
             raise ValueError(f"The training data must be a 2D array, data input is {training_data.ndim}D")
-        
+        # print(training_data[0])
+        # print("")
+        # print(training_data[1])
         self.mean_x = np.mean(training_data[0])
         self.mean_y = np.mean(training_data[1])
         self.std_dev_x = np.std(training_data[0])
@@ -30,10 +32,13 @@ class ZScore:
 
     def predict(self, data_point: np.ndarray) -> bool:
         """Calculates z_score of input values, compares this value to threshold. Returns True if the z_score is within the threshold, False otherwise."""
-        if self.mean_x is None or self.std_dev_x is None or self.mean_y is None or self.std_dev_y is None:
+        if self.mean_x is None:
             raise ValueError("The model has not been trained")
 
         if data_point.ndim != 2:
+            print("-------------------")
+            print(data_point)
+            print("-------------------")
             raise ValueError(f"The input data must be a 2D array, data input is {data_point.ndim}D")
 
         z_score_x = (data_point[0] - self.mean_x) / self.std_dev_x
