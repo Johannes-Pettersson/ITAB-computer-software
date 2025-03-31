@@ -81,7 +81,6 @@ def anomaly_detection_evaluation(
                 accuracy += 1
 
         accuracy = (accuracy / size_evaluation) * 100
-        print(f"Accuracy for i: {i}: {accuracy}%")
         accuracies.append(accuracy)
 
     return accuracies
@@ -136,8 +135,8 @@ def main():
         "../Dataset/Training/G_G_F_0",
         "../Dataset/Training/F_G_F_0",
         "../Dataset/Training/C_G_F_0",
-        "../Evaluation/G_G_F_0",
-        "../Evaluation/F_G_F_0",
+        "../Dataset/Evaluation/G_G_F_0",
+        "../Dataset/Evaluation/F_G_F_0",
     ]
     labels = ["Good Gates", "Faulty Gates", "Combined"]
     accuracies = []
@@ -147,22 +146,36 @@ def main():
     num_combined_files = 25
     # Get files for training
     good_gate_files, faulty_gate_files = get_files(
-        num_good_gate_files, num_faulty_gate_files, pick_randomly=False
-    )  # Add Path to GetFiles.py
-    combined_good_gate_files, combined_faulty_gate_files = get_files(
-        num_combined_files, num_combined_files, pick_randomly=False
+        num_good_gate_files,
+        num_faulty_gate_files,
+        good_gate_dir=dataset_directories[0],
+        faulty_gate_dir=dataset_directories[1],
+        pick_randomly=False,
     )
+    # combined_good_gate_files, combined_faulty_gate_files = get_files(
+    #     num_combined_files,
+    #     num_combined_files,
+    #     good_gate_dir=dataset_directories[2],
+    #     faulty_gate_dir=dataset_directories[2],
+    #     pick_randomly=False
+    # )
 
-    # Extract the feature data - FeatureExtration() is a class
+    # Extract the feature data for training
     training_good_gate_features = FeatureExtraction(feature_list, good_gate_files)
     training_faulty_gate_features = FeatureExtraction(feature_list, faulty_gate_files)
     # training_combined_good_gate_features = FeatureExtraction(feature_list, combined_good_gate_files)
     # training_combined_faulty_gate_features = FeatureExtraction(feature_list, combined_faulty_gate_files)
 
     # Get files for evaluation
-    good_gate_files, faulty_gate_files = get_files(50, 50, pick_randomly=True)
+    good_gate_files, faulty_gate_files = get_files(
+        num_good_gate_files,
+        num_faulty_gate_files,
+        good_gate_dir=dataset_directories[3],
+        faulty_gate_dir=dataset_directories[4],
+        pick_randomly=False,
+    )
 
-    # Extract the feature data
+    # # Extract the feature data for evaluation
     evaluation_features = FeatureExtraction(
         feature_list, good_gate_files + faulty_gate_files
     )
@@ -184,7 +197,7 @@ def main():
     # Fake data remove when real data is available
     acc = []
     for i in range(50):
-        acc.append(35)
+        acc.append(15 + i)
 
     accuracies.append(acc)
 

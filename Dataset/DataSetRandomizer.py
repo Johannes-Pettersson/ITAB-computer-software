@@ -1,7 +1,12 @@
 import os
 import random
 import shutil
+import sys
 
+sys.path.append(
+    os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+)  # Add the path to the root folder of the git repository
+from System.GetFiles import get_files # type: ignore
 
 def copy_and_rename_files(good_gate_files, faulty_gate_files):
     destination_dir = "goodGates"
@@ -38,7 +43,7 @@ def copy_files_to_directories(category, data_type, file_list, iterations, num_of
     return file_list
 
 
-def get_files(good_gate_dir, faulty_gate_dir):
+def get_files_from_dir(good_gate_dir, faulty_gate_dir):
     good_gate_files = []
     faulty_gate_files = []
 
@@ -55,7 +60,10 @@ def get_files(good_gate_dir, faulty_gate_dir):
 
 def main():
 
-    good_gate_files, faulty_gate_files = get_files("goodGates", "faultyGates")
+    # good_gate_files, faulty_gate_files = get_files(1000, 700, False)
+    # copy_and_rename_files(good_gate_files, faulty_gate_files)
+
+    good_gate_files, faulty_gate_files = get_files_from_dir("goodGates", "faultyGates")
 
     good_gate_files = copy_files_to_directories(
         "Training", "G_G_F_", good_gate_files, 5, 50
@@ -69,7 +77,6 @@ def main():
     good_gate_files = copy_files_to_directories(
         "Configuration", "G_G_F_", good_gate_files, 1, 50
     )
-
     faulty_gate_files = copy_files_to_directories(
         "Training", "F_G_F_", faulty_gate_files, 5, 50
     )
