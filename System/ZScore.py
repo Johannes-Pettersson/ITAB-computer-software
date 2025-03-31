@@ -39,9 +39,6 @@ class ZScore:
             raise ValueError("The model has not been trained")
 
         if data_point.ndim != 2:
-            print("-------------------")
-            print(data_point)
-            print("-------------------")
             raise ValueError(
                 f"The input data must be a 2D array, data input is {data_point.ndim}D"
             )
@@ -106,13 +103,13 @@ def get_files(num_of_good_gate_files, num_of_faulty_gate_files):
         "../Recording/Faulty_gate_recordings/Day 2/Session 2",
     ]
 
-    for dir in functioning_directories:
-        for entry in os.scandir(dir):
+    for path in functioning_directories:
+        for entry in os.scandir(path):
             if entry.is_file():
                 good_gate_files.append(entry.path)
 
-    for dir in faulty_directories:
-        for entry in os.scandir(dir):
+    for path in faulty_directories:
+        for entry in os.scandir(path):
             if entry.is_file():
                 faulty_gate_files.append(entry.path)
 
