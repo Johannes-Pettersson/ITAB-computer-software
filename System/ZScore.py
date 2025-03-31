@@ -28,9 +28,6 @@ class ZScore:
             raise ValueError(
                 f"The training data must be a 2D array, data input is {training_data.ndim}D"
             )
-        # print(training_data[0])
-        # print("")
-        # print(training_data[1])
         self.mean_x = np.mean(training_data[0])
         self.mean_y = np.mean(training_data[1])
         self.std_dev_x = np.std(training_data[0])
