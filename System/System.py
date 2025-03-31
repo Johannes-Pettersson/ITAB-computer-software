@@ -30,15 +30,15 @@ def get_feature_value_list(
         faulty_feature_1_values.append(get_feature_value(feature_1_type, file))
         faulty_feature_2_values.append(get_feature_value(feature_2_type, file))
 
-    combinded_good_gate_feature_values = np.vstack(
+    combined_good_gate_feature_values = np.vstack(
         (functioning_feature_1_values, functioning_feature_2_values)
     ).T
 
-    combinded_faulty_gate_feature_values = np.vstack(
+    combined_faulty_gate_feature_values = np.vstack(
         (faulty_feature_1_values, faulty_feature_2_values)
     ).T
 
-    return combinded_good_gate_feature_values, combinded_faulty_gate_feature_values
+    return combined_good_gate_feature_values, combined_faulty_gate_feature_values
 
 
 def anomaly_detection_evaluation(
