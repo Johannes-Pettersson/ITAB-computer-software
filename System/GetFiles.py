@@ -39,16 +39,10 @@ def get_files(
             else faulty_gate_dir
         )
     ]
-    print("-------------------")
-    print(functioning_directories)
-    print(faulty_directories)
-    print("-------------------")
     if not os.path.isdir(functioning_directories[0]) or not os.path.isdir(
         faulty_directories[0]
     ):
         raise ValueError("The directories do not exist")
-    else:
-        print("Directories exist")
 
     for dir in functioning_directories:
         for entry in os.scandir(dir):
@@ -73,6 +67,7 @@ def get_files(
             if pick_randomly
             else faulty_gate_files.pop()
         )
+        
     if (
         len(good_gate_files) != num_of_good_gate_files
         and len(faulty_gate_files) != num_of_faulty_gate_files
@@ -80,7 +75,5 @@ def get_files(
         raise ValueError(
             "Number of files in the directories is less than the number of files requested"
         )
-
-    print("OK!!")
 
     return good_gate_files, faulty_gate_files
