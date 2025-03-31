@@ -30,7 +30,7 @@ def copy_files_to_directories(category, data_type, file_list, iterations, num_of
                 )  # Ensures that the files is randomly selected
                 file_list.remove(file)
                 destination_dir = f"../Dataset/{category}/{data_type}{i}/"
-                os.makedirs(dir, exist_ok=True)
+                os.makedirs(destination_dir, exist_ok=True)
                 shutil.copy(file, destination_dir)
     else:
         raise ValueError("Not enough files in the list")
