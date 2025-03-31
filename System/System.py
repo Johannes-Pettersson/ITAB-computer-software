@@ -5,7 +5,7 @@ from FeatureExtraction import FeatureExtraction
 import sys
 import os
 import numpy as np
-import matplotlib.pyplot as plt 
+import matplotlib.pyplot as plt
 
 sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -57,20 +57,22 @@ def anomaly_detection_evaluation(
     iterations = []
     accuracies = []
 
-    for i in range(1, size_training): # Loops through Quantity of training data (2 -> 50)
+    for i in range(
+        1, size_training
+    ):  # Loops through Quantity of training data (2 -> 50)
         accuracy = 0
-        training_arr = np.ndarray((2, i+1))
-        for j in range(size_evaluation): # Loops through all evaluation datapoints (1 -> 100)
+        training_arr = np.ndarray((2, i + 1))
+        for j in range(
+            size_evaluation
+        ):  # Loops through all evaluation datapoints (1 -> 100)
             prediction = True
             for k in range(0, size_features, 2):  # Loops through all features in list
-                # print(j)
-                training_arr[0] = training_data.features[training_data.feature_list[k]][:i+1]
-                training_arr[1] = training_data.features[training_data.feature_list[k + 1]][:i+1]
-                # print("debug")
-                # print(training_arr)
-                # print(training_arr.ndim)
-                # print(training_arr.shape)
-                # print("debug")
+                training_arr[0] = training_data.features[training_data.feature_list[k]][
+                    : i + 1
+                ]
+                training_arr[1] = training_data.features[
+                    training_data.feature_list[k + 1]
+                ][: i + 1]
                 z_score.train(training_arr)
                 evaluation_values[0] = evaluation_data.features[
                     evaluation_data.feature_list[k]
@@ -78,10 +80,6 @@ def anomaly_detection_evaluation(
                 evaluation_values[1] = evaluation_data.features[
                     evaluation_data.feature_list[k + 1]
                 ][j]
-                # print("debug")
-                # print(evaluation_values)
-                # print(evaluation_values.shape)
-                # print("debug")
                 new_prediction = z_score.predict(evaluation_values)
                 prediction = (
                     prediction and expected_results[j]
@@ -96,9 +94,23 @@ def anomaly_detection_evaluation(
         print(f"Accuracy for i: {i}: {accuracy}%")
         accuracies.append(accuracy)
 
-    x_values = range(2, len(accuracies) + 2)
+    return accuracies
+
+
+def plot_accuracy(accuracies, labels):
     plt.figure(figsize=(8, 5))
-    plt.plot(x_values, accuracies, marker="o", linestyle="-", color="b", label="Good Gates Only")
+    colors = ["b", "r", "g"]
+    for accuracy, label, color in zip(accuracies, labels, colors):
+        x_values = range(2, len(accuracy) + 2)
+        plt.plot(
+            x_values,
+            accuracy,
+            linestyle="-",
+            linewidth=3.0,
+            color=color,
+            label=label,
+        )
+
     plt.xlabel("Quantity of Training Data (Files)")
     plt.ylabel("Accuracy (%)")
     plt.title("Performance Metrics")
@@ -106,7 +118,7 @@ def anomaly_detection_evaluation(
     plt.xlim(0, 50)
     plt.ylim(0, 100)
     plt.xticks(range(0, 51, 5))
-    plt.legend()
+    plt.legend(loc="lower right")
     plt.grid(True)
     plt.show()
 
@@ -137,35 +149,56 @@ def main():
         "../Evaluation/G_G_F_0",
         "../Evaluation/F_G_F_0",
     ]
+    labels = ["Good Gates", "Faulty Gates", "Combined"]
+    accuracies = []
 
+    num_good_gate_files = 50
+    num_faulty_gate_files = 50
+    num_combined_files = 25
     # Get files for training
     good_gate_files, faulty_gate_files = get_files(
-        50, 50, pick_randomly=False
+        num_good_gate_files, num_faulty_gate_files, pick_randomly=False
     )  # Add Path to GetFiles.py
     combined_good_gate_files, combined_faulty_gate_files = get_files(
-        25, 25, pick_randomly=False
+        num_combined_files, num_combined_files, pick_randomly=False
     )
 
     # Extract the feature data - FeatureExtration() is a class
     training_good_gate_features = FeatureExtraction(feature_list, good_gate_files)
-    # training_faulty_gate_features = FeatureExtraction(feature_list, faulty_gate_files)
+    training_faulty_gate_features = FeatureExtraction(feature_list, faulty_gate_files)
     # training_combined_good_gate_features = FeatureExtraction(feature_list, combined_good_gate_files)
     # training_combined_faulty_gate_features = FeatureExtraction(feature_list, combined_faulty_gate_files)
 
     # Get files for evaluation
-    good_gate_files, faulty_gate_files = get_files(50, 50, pick_randomly=False)
+    good_gate_files, faulty_gate_files = get_files(50, 50, pick_randomly=True)
 
     # Extract the feature data
     evaluation_features = FeatureExtraction(
         feature_list, good_gate_files + faulty_gate_files
     )
-
-    anomaly_detection_evaluation(
-        training_good_gate_features,
-        evaluation_features,
-        [True] * len(good_gate_files) + [False] * len(faulty_gate_files),
+    accuracies.append(
+        anomaly_detection_evaluation(
+            training_good_gate_features,
+            evaluation_features,
+            [True] * len(good_gate_files) + [False] * len(faulty_gate_files),
+        )
     )
 
+    accuracies.append(
+        anomaly_detection_evaluation(
+            training_faulty_gate_features,
+            evaluation_features,
+            [False] * len(good_gate_files) + [True] * len(faulty_gate_files),
+        )
+    )
+    # Fake data remove when real data is available
+    acc = []
+    for i in range(50):
+        acc.append(35)
+
+    accuracies.append(acc)
+
+    plot_accuracy(accuracies, labels)
     # good_gate_feature_values, faulty_gate_feature_values = get_feature_value_list(
     #     good_gate_files=good_gate_files,
     #     faulty_gate_files=faulty_gate_files,
