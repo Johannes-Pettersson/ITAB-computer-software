@@ -67,7 +67,7 @@ def get_files(
             if pick_randomly
             else faulty_gate_files.pop()
         )
-        
+
     if (
         len(good_gate_files) != num_of_good_gate_files
         and len(faulty_gate_files) != num_of_faulty_gate_files
