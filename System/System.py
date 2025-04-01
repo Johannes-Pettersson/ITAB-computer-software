@@ -54,17 +54,14 @@ def anomaly_detection_evaluation(
     size_evaluation = len(evaluation_data.features[evaluation_data.feature_list[0]])
     size_features = len(training_data.feature_list)
 
-    iterations = []
     accuracies = []
 
-    for i in range(
-        1, size_training
-    ):  # Loops through Quantity of training data (2 -> 50)
+    for i in range(1, size_training):  # Loops through Quantity of training data (2 -> 50)
+
         accuracy = 0
         training_arr = np.ndarray((2, i + 1))
-        for j in range(
-            size_evaluation
-        ):  # Loops through all evaluation datapoints (1 -> 100)
+        for j in range(size_evaluation):  # Loops through all evaluation datapoints (1 -> 100)
+
             prediction = True
             for k in range(0, size_features, 2):  # Loops through all features in list
 
