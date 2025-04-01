@@ -1,5 +1,5 @@
 from LOF import calc_lof, calc_and_plot_lof
-from GetFiles import get_files
+from GetFiles import get_files, get_files_from_directories
 from ZScore import ZScore, plot_z_score
 from FeatureExtraction import FeatureExtraction
 import sys
@@ -145,14 +145,14 @@ def main():
     num_faulty_gate_files = 50
     num_combined_files = 25
     # Get files for training
-    good_gate_files, faulty_gate_files = get_files(
+    good_gate_files, faulty_gate_files = get_files_from_directories(
         num_good_gate_files,
         num_faulty_gate_files,
         good_gate_dir=dataset_directories[0],
         faulty_gate_dir=dataset_directories[1],
         pick_randomly=False,
     )
-    # combined_good_gate_files, combined_faulty_gate_files = get_files(
+    # combined_good_gate_files, combined_faulty_gate_files = get_files_from_directories(
     #     num_combined_files,
     #     num_combined_files,
     #     good_gate_dir=dataset_directories[2],
@@ -167,7 +167,7 @@ def main():
     # training_combined_faulty_gate_features = FeatureExtraction(feature_list, combined_faulty_gate_files)
 
     # Get files for evaluation
-    good_gate_files, faulty_gate_files = get_files(
+    good_gate_files, faulty_gate_files = get_files_from_directories(
         num_good_gate_files,
         num_faulty_gate_files,
         good_gate_dir=dataset_directories[3],
