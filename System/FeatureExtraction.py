@@ -9,14 +9,14 @@ class FeatureExtraction:
     def __init__(self, feature_list, files):
         self.feature_list = feature_list
         self.features = {feature: [] for feature in feature_list}
-        self.extract_from_files(files)
+        self.extract_features_from_files(files)
     
     def extract_features_from_file(self, file):
         for feature in self.feature_list:
             value = get_feature_value(feature, file)
             self.features[feature].append(value)
 
-    def extract_from_files(self, file_list):
+    def extract_features_from_files(self, file_list):
         for file in file_list:
             self.extract_features_from_file(file)
 
