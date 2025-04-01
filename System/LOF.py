@@ -4,11 +4,11 @@ import matplotlib.pyplot as plt
 
 
 def calc_lof(data: np.ndarray, data_point, n_neighbors=20) -> bool:
-    "Calculate if the data_point is a outlier. True == Outlier, False == Non-Outlier"
+    "Calculate if the data_point is a outlier. False == Outlier, True == Non-Outlier"
     estimator = LocalOutlierFactor(n_neighbors=n_neighbors)
 
     labels = estimator.fit_predict(np.vstack([data, data_point]))
-    return labels[-1] == -1
+    return labels[-1] == 1
 
 
 def calc_and_plot_lof(data: np.ndarray, data_point=None, n_neighbors=20):
