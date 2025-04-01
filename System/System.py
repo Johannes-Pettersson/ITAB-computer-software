@@ -67,25 +67,18 @@ def anomaly_detection_evaluation(
         ):  # Loops through all evaluation datapoints (1 -> 100)
             prediction = True
             for k in range(0, size_features, 2):  # Loops through all features in list
-                training_arr[0] = training_data.features[training_data.feature_list[k]][
-                    : i + 1
-                ]
-                training_arr[1] = training_data.features[
-                    training_data.feature_list[k + 1]
-                ][: i + 1]
+
+                training_arr[0] = training_data.features[training_data.feature_list[k]][: i + 1]
+
+                training_arr[1] = training_data.features[training_data.feature_list[k + 1]][: i + 1]
+
                 z_score.train(training_arr)
-                evaluation_values[0] = evaluation_data.features[
-                    evaluation_data.feature_list[k]
-                ][j]
-                evaluation_values[1] = evaluation_data.features[
-                    evaluation_data.feature_list[k + 1]
-                ][j]
+
+                evaluation_values[0] = evaluation_data.features[evaluation_data.feature_list[k]][j]
+                evaluation_values[1] = evaluation_data.features[evaluation_data.feature_list[k + 1]][j]
+
                 new_prediction = z_score.predict(evaluation_values)
-                prediction = (
-                    prediction and expected_results[j]
-                    if (new_prediction == expected_results[j])
-                    else not expected_results[j]
-                )
+                prediction = (prediction and expected_results[j] if (new_prediction == expected_results[j]) else not expected_results[j])
 
             if prediction == expected_results[j]:
                 accuracy += 1
