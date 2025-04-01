@@ -54,6 +54,8 @@ def anomaly_detection_evaluation(
     size_evaluation = len(evaluation_data.features[evaluation_data.feature_list[0]])
     size_features = len(training_data.feature_list)
 
+    outlier_vs_nonoutlier_prediction_th = 0.30
+
     accuracies = []
 
     for i in range(1, size_training):  # Loops through Quantity of training data (2 -> 50)
@@ -62,7 +64,9 @@ def anomaly_detection_evaluation(
         training_arr = np.ndarray((2, i + 1))
         for j in range(size_evaluation):  # Loops through all evaluation datapoints (1 -> 100)
 
-            prediction = True
+            total_file_prediction = True
+            z_score_predictions = []
+            lof_predictions = []
             for k in range(0, size_features, 2):  # Loops through all features in list
 
                 training_arr[0] = training_data.features[training_data.feature_list[k]][: i + 1]
@@ -74,10 +78,18 @@ def anomaly_detection_evaluation(
                 evaluation_values[0] = evaluation_data.features[evaluation_data.feature_list[k]][j]
                 evaluation_values[1] = evaluation_data.features[evaluation_data.feature_list[k + 1]][j]
 
-                new_prediction = z_score.predict(evaluation_values)
-                prediction = (prediction and expected_results[j] if (new_prediction == expected_results[j]) else not expected_results[j])
+                z_score_predictions.append(z_score.predict(evaluation_values))
+                lof_predictions.append(calc_lof(training_arr.T, evaluation_values.T))
 
-            if prediction == expected_results[j]:
+            outlier_count = 0
+            for prediction in z_score_predictions + lof_predictions:
+                if not prediction:
+                    outlier_count+=1
+
+            if outlier_count/len(z_score_predictions+lof_predictions) > outlier_vs_nonoutlier_prediction_th:
+                total_file_prediction = False # i.e outlier
+
+            if total_file_prediction == expected_results[j]:
                 accuracy += 1
 
         accuracy = (accuracy / size_evaluation) * 100
