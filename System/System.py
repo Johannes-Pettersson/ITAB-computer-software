@@ -44,7 +44,7 @@ def get_feature_value_list(
 def anomaly_detection_evaluation(
     training_data: FeatureExtraction,
     evaluation_data: FeatureExtraction,
-    expected_results,
+    expected_results: bool,
 ):
 
     z_score = ZScore()
@@ -96,6 +96,95 @@ def anomaly_detection_evaluation(
         accuracies.append(accuracy)
 
     return accuracies
+
+def anomaly_detection_evaluation_combined(
+        good_training_data: FeatureExtraction,
+        faulty_training_data: FeatureExtraction,
+        evaluation_data: FeatureExtraction,
+        expected_results: bool):
+    """Anomaly detection evaluation for combined training data
+    good_training_data: training data from good gate recordings
+    faulty_training_data: training data from faulty gate recordings
+    evaluation_data: evaluation data from good and faulty gate recordings
+    expected_results: expected results for evaluation data
+    """
+    z_score_good = ZScore()
+    z_score_faulty = ZScore()
+    evaluation_values = np.ndarray((2, 1))
+
+    size_good_training = len(good_training_data.features[good_training_data.feature_list[0]])
+    size_faulty_training = len(faulty_training_data.features[faulty_training_data.feature_list[0]])
+    size_evaluation = len(evaluation_data.features[evaluation_data.feature_list[0]])
+    size_good_features = len(good_training_data.feature_list)
+    size_faulty_features = len(faulty_training_data.feature_list)
+
+    if size_good_training != size_faulty_training:
+        raise ValueError("Good and faulty training data must have the same number of training samples")
+
+    if size_good_features != size_faulty_features:
+        raise ValueError("Good and faulty training data must have the same number of features")
+
+    outlier_vs_nonoutlier_prediction_th = 0.30
+
+    accuracies = []
+
+    for i in range(1, size_good_training):  # Loops through Quantity of training data (2 -> 50)
+
+        accuracy = 0
+        good_training_arr = np.ndarray((2, i + 1))
+        faulty_training_arr = np.ndarray((2, i + 1))
+
+        for j in range(size_evaluation):  # Loops through all evaluation datapoints (1 -> 100)
+
+            total_file_prediction = True
+            z_score_predictions = []
+            # lof_predictions = []
+            for k in range(0, size_good_features, 2):  # Loops through all features in list, steps of 2 because 2 dimensinoal data
+
+                good_training_arr[0] = good_training_data.features[good_training_data.feature_list[k]][: i + 1]
+                good_training_arr[1] = good_training_data.features[good_training_data.feature_list[k + 1]][: i + 1]
+
+                faulty_training_arr[0] = faulty_training_data.features[faulty_training_data.feature_list[k]][: i + 1]
+                faulty_training_arr[1] = faulty_training_data.features[faulty_training_data.feature_list[k + 1]][: i + 1]
+
+                z_score_good.train(good_training_arr)
+                z_score_faulty.train(faulty_training_arr)
+
+                evaluation_values[0] = evaluation_data.features[evaluation_data.feature_list[k]][j]
+                evaluation_values[1] = evaluation_data.features[evaluation_data.feature_list[k + 1]][j]
+
+                z_score_good_val = z_score_good.predict_combination(evaluation_values)
+                z_score_faulty_val = z_score_faulty.predict_combination(evaluation_values)
+
+                if z_score_good_val < z_score_faulty_val:
+                    z_score_predictions.append(True)
+                else:
+                    z_score_predictions.append(False)
+
+                # TODO
+                # LOF GOOD VALUE
+                # LOF FAULTY VALUE
+                # Compare which is best
+
+            outlier_count = 0
+            # for prediction in z_score_predictions + lof_predictions:
+            for prediction in z_score_predictions:
+                if not prediction:
+                    outlier_count+=1
+
+            # if outlier_count/len(z_score_predictions+lof_predictions) > outlier_vs_nonoutlier_prediction_th:
+            if outlier_count/len(z_score_predictions) > outlier_vs_nonoutlier_prediction_th:
+                total_file_prediction = False # i.e outlier
+
+            if total_file_prediction == expected_results[j]:
+                accuracy += 1
+
+        accuracy = (accuracy / size_evaluation) * 100
+        accuracies.append(accuracy)
+
+    return accuracies
+
+
 
 
 def plot_accuracy(accuracies, labels):
@@ -206,12 +295,15 @@ def main():
             [False] * len(good_gate_files) + [True] * len(faulty_gate_files),
         )
     )
-    # Fake data remove when real data is available
-    acc = []
-    for i in range(50):
-        acc.append(15 + i)
 
-    accuracies.append(acc)
+    accuracies.append(
+        anomaly_detection_evaluation_combined(
+            training_good_gate_features,
+            training_faulty_gate_features,
+            evaluation_features,
+            [True] * len(good_gate_files) + [False] * len(faulty_gate_files),
+        )
+    )
 
     plot_accuracy(accuracies, labels)
     # good_gate_feature_values, faulty_gate_feature_values = get_feature_value_list(

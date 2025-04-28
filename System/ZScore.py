@@ -51,6 +51,21 @@ class ZScore:
 
         return predict_x and predict_y
 
+    def predict_combination(self, data_point: np.ndarray) -> float:
+        """Calculates z_score of input values, and returns the mean of the z_scores."""
+        if self.mean_x is None:
+            raise ValueError("The model has not been trained")
+
+        if data_point.ndim != 2:
+            raise ValueError(
+                f"The input data must be a 2D array, data input is {data_point.ndim}D"
+            )
+
+        z_score_x = (data_point[0] - self.mean_x) / self.std_dev_x
+        z_score_y = (data_point[1] - self.mean_y) / self.std_dev_y
+
+        return (abs(z_score_x) + abs(z_score_y)) / 2.0
+
 
 def plot_z_score(training_data: np.ndarray, data_point: np.ndarray):
     """Plots the training data and the data point with the z-score radius."""
