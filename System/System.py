@@ -6,6 +6,7 @@ import sys
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+import time
 
 sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -180,8 +181,8 @@ def anomaly_detection_evaluation_combined(
 
 
 
-def plot_accuracy(accuracies, labels):
-    plt.figure(figsize=(8, 5))
+def plot_accuracy(accuracies, labels, num):
+    plt.figure(figsize=(15.0, 8.0), dpi=100)
     colors = ["b", "r", "g"]
     for accuracy, label, color in zip(accuracies, labels, colors):
         x_values = range(2, len(accuracy) + 2)
@@ -203,8 +204,12 @@ def plot_accuracy(accuracies, labels):
     plt.xticks(range(0, 51, 5))
     plt.legend(loc="lower right")
     plt.grid(True)
-    plt.show()
+    # plt.show()
 
+    directory = "Results"
+    os.makedirs(directory, exist_ok=True)
+    plt.savefig(f"{directory}/Accuracy_Comparison_{num}.png", dpi=100)
+    plt.close()
 
 def main():
     # Insert what features to use here
@@ -224,81 +229,87 @@ def main():
         "sb_mean",
         "sc_ptp",
     ]
-    # Set paths to the dataset directories
-    dataset_directories = [
-        "../Dataset/Training/G_G_F_0",
-        "../Dataset/Training/F_G_F_0",
-        "../Dataset/Training/C_G_F_0",
-        "../Dataset/Evaluation/G_G_F_0",
-        "../Dataset/Evaluation/F_G_F_0",
-    ]
-    labels = ["Good Gates", "Faulty Gates", "Combined"]
-    accuracies = []
 
-    num_good_gate_files = 50
-    num_faulty_gate_files = 50
-    num_combined_files = 25
-    # Get files for training
-    good_gate_files, faulty_gate_files = get_files_from_directories(
-        num_good_gate_files,
-        num_faulty_gate_files,
-        good_gate_dir=dataset_directories[0],
-        faulty_gate_dir=dataset_directories[1],
-        pick_randomly=False,
-    )
-    # combined_good_gate_files, combined_faulty_gate_files = get_files_from_directories(
-    #     num_combined_files,
-    #     num_combined_files,
-    #     good_gate_dir=dataset_directories[2],
-    #     faulty_gate_dir=dataset_directories[2],
-    #     pick_randomly=False
-    # )
+    labels = ["Good Gate Recordings", "Faulty Gate Recordings", "Combined Recordings"]
 
-    # Extract the feature data for training
-    training_good_gate_features = FeatureExtraction(feature_list, good_gate_files)
-    training_faulty_gate_features = FeatureExtraction(feature_list, faulty_gate_files)
-    # training_combined_good_gate_features = FeatureExtraction(feature_list, combined_good_gate_files)
-    # training_combined_faulty_gate_features = FeatureExtraction(feature_list, combined_faulty_gate_files)
+    tot_num_of_experiments = 5
+    for num in range(tot_num_of_experiments):
+        # Set paths to the dataset directories
+        dataset_directories = [
+            f"../Dataset/Training/G_G_F_{num}",
+            f"../Dataset/Training/F_G_F_{num}",
+            f"../Dataset/Training/C_G_G_F_{num}",
+            f"../Dataset/Training/C_F_G_F_{num}",
+            f"../Dataset/Evaluation/G_G_F_{num}",
+            f"../Dataset/Evaluation/F_G_F_{num}",
+        ]
+        accuracies = []
 
-    # Get files for evaluation
-    good_gate_files, faulty_gate_files = get_files_from_directories(
-        num_good_gate_files,
-        num_faulty_gate_files,
-        good_gate_dir=dataset_directories[3],
-        faulty_gate_dir=dataset_directories[4],
-        pick_randomly=False,
-    )
+        num_good_gate_files = 50
+        num_faulty_gate_files = 50
+        num_combined_files = 25
 
-    # # Extract the feature data for evaluation
-    evaluation_features = FeatureExtraction(
-        feature_list, good_gate_files + faulty_gate_files
-    )
-    accuracies.append(
-        anomaly_detection_evaluation(
-            training_good_gate_features,
-            evaluation_features,
-            [True] * len(good_gate_files) + [False] * len(faulty_gate_files),
+        # Get files for training data
+        good_gate_files, faulty_gate_files = get_files_from_directories(
+            num_good_gate_files,
+            num_faulty_gate_files,
+            good_gate_dir=dataset_directories[0],
+            faulty_gate_dir=dataset_directories[1],
+            pick_randomly=False,
         )
-    )
-
-    accuracies.append(
-        anomaly_detection_evaluation(
-            training_faulty_gate_features,
-            evaluation_features,
-            [False] * len(good_gate_files) + [True] * len(faulty_gate_files),
+        combined_good_gate_files, combined_faulty_gate_files = get_files_from_directories(
+            num_combined_files,
+            num_combined_files,
+            good_gate_dir=dataset_directories[2],
+            faulty_gate_dir=dataset_directories[3],
+            pick_randomly=False
         )
-    )
 
-    accuracies.append(
-        anomaly_detection_evaluation_combined(
-            training_good_gate_features,
-            training_faulty_gate_features,
-            evaluation_features,
-            [True] * len(good_gate_files) + [False] * len(faulty_gate_files),
+        # Extract the feature data for training
+        training_good_gate_features = FeatureExtraction(feature_list, good_gate_files)
+        training_faulty_gate_features = FeatureExtraction(feature_list, faulty_gate_files)
+        training_combined_good_gate_features = FeatureExtraction(feature_list, combined_good_gate_files)
+        training_combined_faulty_gate_features = FeatureExtraction(feature_list, combined_faulty_gate_files)
+
+        # Get files for evaluation data
+        good_gate_files, faulty_gate_files = get_files_from_directories(
+            num_good_gate_files,
+            num_faulty_gate_files,
+            good_gate_dir=dataset_directories[4],
+            faulty_gate_dir=dataset_directories[5],
+            pick_randomly=False,
         )
-    )
 
-    plot_accuracy(accuracies, labels)
+        # # Extract the feature data for evaluation
+        evaluation_features = FeatureExtraction(
+            feature_list, good_gate_files + faulty_gate_files
+        )
+        accuracies.append(
+            anomaly_detection_evaluation(
+                training_good_gate_features,
+                evaluation_features,
+                [True] * len(good_gate_files) + [False] * len(faulty_gate_files),
+            )
+        )
+
+        accuracies.append(
+            anomaly_detection_evaluation(
+                training_faulty_gate_features,
+                evaluation_features,
+                [False] * len(good_gate_files) + [True] * len(faulty_gate_files),
+            )
+        )
+
+        accuracies.append(
+            anomaly_detection_evaluation_combined(
+                training_combined_good_gate_features,
+                training_combined_faulty_gate_features,
+                evaluation_features,
+                [True] * len(good_gate_files) + [False] * len(faulty_gate_files),
+            )
+        )
+
+        plot_accuracy(accuracies, labels, num)
 
 if __name__ == "__main__":
     main()
