@@ -1,4 +1,4 @@
-from LOF import calc_lof, calc_and_plot_lof
+from LOF import calc_lof, calc_and_plot_lof, calc_lof_outlier_factor
 from GetFiles import get_files, get_files_from_directories
 from ZScore import ZScore, plot_z_score
 from FeatureExtraction import FeatureExtraction
@@ -138,7 +138,7 @@ def anomaly_detection_evaluation_combined(
 
             total_file_prediction = True
             z_score_predictions = []
-            # lof_predictions = []
+            lof_predictions = []
             for k in range(0, size_good_features, 2):  # Loops through all features in list, steps of 2 because 2 dimensinoal data
 
                 good_training_arr[0] = good_training_data.features[good_training_data.feature_list[k]][: i + 1]
@@ -155,25 +155,18 @@ def anomaly_detection_evaluation_combined(
 
                 z_score_good_val = z_score_good.predict_combination(evaluation_values)
                 z_score_faulty_val = z_score_faulty.predict_combination(evaluation_values)
+                z_score_predictions.append(z_score_good_val < z_score_faulty_val)
 
-                if z_score_good_val < z_score_faulty_val:
-                    z_score_predictions.append(True)
-                else:
-                    z_score_predictions.append(False)
-
-                # TODO
-                # LOF GOOD VALUE
-                # LOF FAULTY VALUE
-                # Compare which is best
+                lof_good_val = calc_lof_outlier_factor(good_training_arr.T, evaluation_values.T)
+                lof_faulty_val = calc_lof_outlier_factor(faulty_training_arr.T, evaluation_values.T)
+                lof_predictions.append(lof_good_val < lof_faulty_val)
 
             outlier_count = 0
-            # for prediction in z_score_predictions + lof_predictions:
-            for prediction in z_score_predictions:
+            for prediction in z_score_predictions + lof_predictions:
                 if not prediction:
                     outlier_count+=1
 
-            # if outlier_count/len(z_score_predictions+lof_predictions) > outlier_vs_nonoutlier_prediction_th:
-            if outlier_count/len(z_score_predictions) > outlier_vs_nonoutlier_prediction_th:
+            if outlier_count/len(z_score_predictions+lof_predictions) > outlier_vs_nonoutlier_prediction_th:
                 total_file_prediction = False # i.e outlier
 
             if total_file_prediction == expected_results[j]:
@@ -306,14 +299,6 @@ def main():
     )
 
     plot_accuracy(accuracies, labels)
-    # good_gate_feature_values, faulty_gate_feature_values = get_feature_value_list(
-    #     good_gate_files=good_gate_files,
-    #     faulty_gate_files=faulty_gate_files,
-    #     feature_1_type="sc_min",
-    #     feature_2_type="sb_max")
-
-    # calc_and_plot_lof(faulty_gate_feature_values[:-1], faulty_gate_feature_values[-1])
-
 
 if __name__ == "__main__":
     main()
