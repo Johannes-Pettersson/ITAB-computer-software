@@ -1,7 +1,7 @@
 import librosa
 import matplotlib.pyplot as plt
 import numpy as np
-import sounddevice as sd
+# import sounddevice as sd
 from scipy.signal import savgol_filter
 
 faulty_gate_files = [
