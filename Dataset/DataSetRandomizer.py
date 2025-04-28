@@ -13,6 +13,11 @@ def copy_and_rename_files(good_gate_files, faulty_gate_files):
     os.makedirs(destination_dir, exist_ok=True)
 
     for index, file in enumerate(good_gate_files):
+        _, ext = os.path.splitext(file)
+        if ext.lower() != '.wav':
+            print(f"Skipping non-wav file: {file}")
+            continue  # Skip this file
+
         new_filename = f"G_G_{index}.WAV"
         new_filepath = os.path.join(destination_dir, new_filename)
         shutil.copy2(file, new_filepath)
@@ -21,6 +26,11 @@ def copy_and_rename_files(good_gate_files, faulty_gate_files):
     os.makedirs(destination_dir, exist_ok=True)
 
     for index, file in enumerate(faulty_gate_files):
+        _, ext = os.path.splitext(file)
+        if ext.lower() != '.wav':
+            print(f"Skipping non-wav file: {file}")
+            continue  # Skip this file
+
         new_filename = f"F_G_{index}.WAV"
         new_filepath = os.path.join(destination_dir, new_filename)
         shutil.copy2(file, new_filepath)
@@ -60,7 +70,7 @@ def get_files_from_dir(good_gate_dir, faulty_gate_dir):
 
 def main():
 
-    # good_gate_files, faulty_gate_files = get_files(1000, 700, False)
+    # good_gate_files, faulty_gate_files = get_files(700, 700, False)
     # copy_and_rename_files(good_gate_files, faulty_gate_files)
 
     good_gate_files, faulty_gate_files = get_files_from_dir("goodGates", "faultyGates")
@@ -69,25 +79,19 @@ def main():
         "Training", "G_G_F_", good_gate_files, 5, 50
     )
     good_gate_files = copy_files_to_directories(
-        "Training", "C_G_F_", good_gate_files, 5, 25
+        "Training", "C_G_G_F_", good_gate_files, 5, 25
     )
     good_gate_files = copy_files_to_directories(
         "Evaluation", "G_G_F_", good_gate_files, 5, 50
-    )
-    good_gate_files = copy_files_to_directories(
-        "Configuration", "G_G_F_", good_gate_files, 1, 50
     )
     faulty_gate_files = copy_files_to_directories(
         "Training", "F_G_F_", faulty_gate_files, 5, 50
     )
     faulty_gate_files = copy_files_to_directories(
-        "Training", "C_G_F_", faulty_gate_files, 5, 25
+        "Training", "C_F_G_F_", faulty_gate_files, 5, 25
     )
     faulty_gate_files = copy_files_to_directories(
         "Evaluation", "F_G_F_", faulty_gate_files, 5, 50
-    )
-    faulty_gate_files = copy_files_to_directories(
-        "Configuration", "F_G_F_", faulty_gate_files, 1, 50
     )
 
     print(len(good_gate_files))
