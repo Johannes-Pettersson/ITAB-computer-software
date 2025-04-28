@@ -14,14 +14,11 @@ def get_files(num_of_good_gate_files, num_of_faulty_gate_files, pick_randomly=Tr
     faulty_gate_files = []
 
     functioning_directories = [
-        "../Recording/Functioning_gate_recordings/Day 2/Session 1",
-        "../Recording/Functioning_gate_recordings/Day 2/Session 2"
+        "../Recording/Functioning_gate_recordings/Day 3/Session 1"
     ]
     faulty_directories = [
 
-        "../Recording/Faulty_gate_recordings/Day 2/Session 1",
-        "../Recording/Faulty_gate_recordings/Day 2/Session 2"
-
+        "../Recording/Faulty_gate_recordings/Day 3/Session 1"
     ]
 
     for dir in functioning_directories:
