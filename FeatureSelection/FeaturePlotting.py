@@ -28,14 +28,14 @@ def get_files( num_of_good_gate_files, num_of_faulty_gate_files):
     ]
 
     for dir in functioning_directories:
-        for entry in os.scandir(dir):  
-            if entry.is_file():
+        for entry in os.scandir(dir):
+            if entry.name.endswith(".WAV") or entry.name.endswith(".wav"):
                 good_gate_files.append(entry.path)
 
     for dir in faulty_directories:
-        for entry in os.scandir(dir):  
-            if entry.is_file():
-                faulty_gate_files.append(entry.path)    
+        for entry in os.scandir(dir):
+            if entry.name.endswith(".WAV") or entry.name.endswith(".wav"):
+                faulty_gate_files.append(entry.path)
 
     while(len(good_gate_files) >  num_of_good_gate_files):
         good_gate_files.pop()
@@ -90,8 +90,11 @@ def plot_one_dim(data1_title, data1, data1_labels, data2_title, data2, data2_lab
             fig.canvas.draw_idle()
 
     fig.canvas.mpl_connect("motion_notify_event", on_hover)
-
-    plt.show()
+    directory = "FeaturePrestudyPlots/OneDim"
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    plt.savefig(f"{directory}/{xlabel}.png")
+    plt.close()
 
 def plot_two_dim(data1_title, data1, data1_labels, data2_title, data2, data2_labels, xlabel, ylabel):
     data1_color = 'blue'
@@ -136,8 +139,10 @@ def plot_two_dim(data1_title, data1, data1_labels, data2_title, data2, data2_lab
             fig.canvas.draw_idle()
 
     fig.canvas.mpl_connect("motion_notify_event", on_hover)
-
-    plt.savefig(fr"C:\Users\johan\OneDrive - Jonkoping University\DIS3\Examensarbete\Feature prestudy images\evaluation\{xlabel}\{xlabel}_{ylabel}")
+    directory = "FeaturePrestudyPlots/TwoDim"
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    plt.savefig(f"{directory}/{xlabel}_{ylabel}.png")
     plt.close()
 
 def _get_feature_value(feature_type, file):
@@ -210,7 +215,7 @@ def _get_feature_value(feature_type, file):
             return ro_min
         case "ro_mean":
             _, _, _, _, _, _, ro_mean, _ = ro_calculate_values(file=file, roll_percent=.37)
-            return ro_mean    
+            return ro_mean
         case "ro_std":
             _, _, _, _, _, _, _, ro_std = ro_calculate_values(file=file, roll_percent=.37)
             return ro_std
@@ -236,8 +241,8 @@ def _get_feature_value(feature_type, file):
             raise Exception("Feature_type not defined")
 
 def plot_one_feature(feature_type: str,  num_of_good_gate_files, num_of_faulty_gate_files):
-    """Feature type is a string thats defined to specify a certain feature. If you wish to add a new type. Simply implement it in the match case in the _get_feature_value function"""       
-    
+    """Feature type is a string thats defined to specify a certain feature. If you wish to add a new type. Simply implement it in the match case in the _get_feature_value function"""
+
     good_gate_files, faulty_gate_files = get_files( num_of_good_gate_files, num_of_faulty_gate_files)
 
     good_gate_feature_values = []
@@ -248,11 +253,11 @@ def plot_one_feature(feature_type: str,  num_of_good_gate_files, num_of_faulty_g
 
     for file in faulty_gate_files:
         faulty_gate_feature_values.append(_get_feature_value(feature_type, file))
-    
-    plot_one_dim("Func gates", good_gate_feature_values, good_gate_files, "Faulty gates", faulty_gate_feature_values, faulty_gate_files, feature_type)
-    
+
+    plot_one_dim("Good Gate Recordings", good_gate_feature_values, good_gate_files, "Faulty Gate Recordings", faulty_gate_feature_values, faulty_gate_files, feature_type)
+
 def plot_two_features(feature_1_type: str, feature_2_type: str,  num_of_good_gate_files, num_of_faulty_gate_files):
-    """Feature type is a string thats defined to specify a certain feature. If you wish to add a new type. Simply implement it in the match case in the _get_feature_value function"""       
+    """Feature type is a string thats defined to specify a certain feature. If you wish to add a new type. Simply implement it in the match case in the _get_feature_value function"""
 
     good_gate_files, faulty_gate_files = get_files( num_of_good_gate_files, num_of_faulty_gate_files)
 
@@ -274,9 +279,21 @@ def plot_two_features(feature_1_type: str, feature_2_type: str,  num_of_good_gat
 
     combinded_faulty_gate_feature_values = np.vstack((faulty_feature_1_values, faulty_feature_2_values)).T
 
-    plot_two_dim("Func gates", combinded_good_gate_feature_values, good_gate_files, "Faulty gates", combinded_faulty_gate_feature_values, faulty_gate_files, feature_1_type, feature_2_type)
+    plot_two_dim("Good Gate Recordings", combinded_good_gate_feature_values, good_gate_files, "Faulty Gate Recordings", combinded_faulty_gate_feature_values, faulty_gate_files, feature_1_type, feature_2_type)
 
 def main():
+#     feat_list = [
+#     "sc_min", "sc_max", "sc_ptp", "sc_deriv_max", "sc_deriv_min",
+#     "rmse_mean", "rmse_max", "rmse_std",
+#     "zcr_total", "zcr_mean", "zcr_max", "zcr_std",
+#     "ae_mean", "ae_max", "ae_std",
+#     "sb_max", "sb_min", "sb_ptp", "sb_mean", "sb_std",
+#     "ro_max", "ro_min", "ro_mean", "ro_std",
+#     "ber_max", "ber_min", "ber_mean", "ber_std",
+#     "mfcc_skewness", "mfcc_kurtosis"
+# ]
+#     for feat in feat_list:
+#         plot_one_feature(feat, 700, 700)
     feat1 = "sb_mean"
     feat_list = ["ae_max", "sc_ptp", "mfcc_skewness", "sb_max", "ber_min", "sc_deriv_min", "sc_max", "zcr_std", "ro_mean", "ber_max", "ber_std", "ro_max", "zcr_max", "sc_deriv_max", "ro_min"]
 
@@ -286,7 +303,7 @@ def main():
             print(f"done with {feat1}_{feat}")
 
         feat1 = feat_list.pop(0)
-    
+
     # parser = create_arg_parser()
     # args = parser.parse_args()
 
@@ -304,7 +321,7 @@ def main():
 
 # Exampleusage plot_two_dim
 # test1 = np.random.rand(100, 2) * 4
-# test2 = (np.random.rand(100, 2) * 4) +6  
+# test2 = (np.random.rand(100, 2) * 4) +6
 # plot_two_dim(data1=test1, data1_title="Functioning", data1_labels=[f"Point {i} test1" for i in range(len(test1))], data2=test2, data2_title="Faulty", data2_labels=[f"Point {i} test2" for i in range(len(test1))], xlabel="Feature 1", ylabel="Feature 2")
 
 if __name__ == "__main__":
