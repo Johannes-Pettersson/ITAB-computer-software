@@ -7,6 +7,10 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 import time
+from matplotlib.scale import ScaleBase
+from matplotlib.transforms import Transform
+from matplotlib.ticker import FixedLocator, FuncFormatter
+import matplotlib.scale as mscale
 
 sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -178,7 +182,42 @@ def anomaly_detection_evaluation_combined(
 
     return accuracies
 
+class SquareYTransform(Transform):
+    input_dims = output_dims = 1
 
+    def transform_non_affine(self, y):
+        y = np.asarray(y)
+        y = np.clip(y, 0, 100)
+        return (y / 100.0) ** 2
+
+    def inverted(self):
+        return SquareYInverseTransform()
+
+class SquareYInverseTransform(Transform):
+    input_dims = output_dims = 1
+
+    def transform_non_affine(self, y):
+        y = np.asarray(y)
+        return np.sqrt(y) * 100
+
+    def inverted(self):
+        return SquareYTransform()
+
+class SquareYScale(ScaleBase):
+    name = 'squaredy'
+
+    def get_transform(self):
+        return SquareYTransform()
+
+    def set_default_locators_and_formatters(self, axis):
+        ticks = [0, 20, 40, 60, 80, 100]
+        axis.set_major_locator(FixedLocator(ticks))
+        axis.set_major_formatter(FuncFormatter(lambda y, _: f'{int(y)}'))
+
+    def limit_range_for_scale(self, vmin, vmax, minpos):
+        return max(vmin, 0), min(vmax, 100)
+
+mscale.register_scale(SquareYScale)
 
 
 def plot_accuracy(accuracies, labels, num):
@@ -199,6 +238,7 @@ def plot_accuracy(accuracies, labels, num):
     plt.ylabel("Accuracy (%)")
     plt.title("Performance Metrics")
 
+    plt.yscale('squaredy')
     plt.xlim(0, 50)
     plt.ylim(0, 100)
     plt.xticks(range(0, 51, 5))
