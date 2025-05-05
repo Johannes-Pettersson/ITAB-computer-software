@@ -221,7 +221,7 @@ mscale.register_scale(SquareYScale)
 
 
 def plot_accuracy(accuracies, labels, num):
-    plt.figure(figsize=(15.0, 8.0), dpi=100)
+    plt.figure(figsize=(10, 6.0), dpi=100)
     colors = ["b", "r", "g"]
     for accuracy, label, color in zip(accuracies, labels, colors):
         x_values = range(2, len(accuracy) + 2)
