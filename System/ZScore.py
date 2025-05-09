@@ -89,17 +89,18 @@ def plot_z_score(training_data: np.ndarray, data_point: np.ndarray):
     z_score_other_x = (data_point[0] - mean_x) / std_dev_x
     z_score_other_y = (data_point[1] - mean_y) / std_dev_y
 
+    plt.figure(figsize=(10, 5))
+    plt.title("Z-Score")
     plt.scatter(
-        z_score_training_x, z_score_training_y, color="g", s=20.0, label="Training"
+        z_score_training_x, z_score_training_y, color="green", s=20.0, label="Training Data"
     )
-    plt.scatter(z_score_other_x, z_score_other_y, color="b", s=20.0, label="Input Data")
+    plt.scatter(z_score_other_x, z_score_other_y, color="red", s=20.0, label="Input Data")
 
-    # Set threshold lines to 3.0 standard deviations
-    plt.axvline(x=3.0, color="r", linestyle="--")
-    plt.axvline(x=-3.0, color="r", linestyle="--")
-    plt.axhline(y=3.0, color="r", linestyle="--")
-    plt.axhline(y=-3.0, color="r", linestyle="--")
-
+    lim = 7.5
+    plt.xlim(-lim, lim)
+    plt.ylim(-lim, lim)
+    # plt.axhspan(ymin=-3.0, ymax=3.0, xmin=-3.0, xmax=3.0, color="green", alpha=0.1)
+    plt.fill_between(x=np.linspace(-3, 3, 100), y1=-3, y2=3, color="green", alpha=0.1)
     plt.legend(loc="upper right")
     plt.show()
 

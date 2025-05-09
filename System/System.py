@@ -82,6 +82,9 @@ def anomaly_detection_evaluation(
                 z_score_predictions.append(z_score.predict(evaluation_values))
                 lof_predictions.append(calc_lof(training_arr.T, evaluation_values.T))
 
+                if i == 35 and j > 48 and k == 6:
+                    plot_z_score(training_arr, evaluation_values)
+
             outlier_count = 0
             for prediction in z_score_predictions + lof_predictions:
                 if not prediction:
