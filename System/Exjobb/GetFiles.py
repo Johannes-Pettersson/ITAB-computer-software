@@ -1,7 +1,7 @@
 import os
 
 
-def get_files(num_of_files):
+def get_files(num_of_files, data_dir):
     """
     Set pick_randomly to False to get the same files every time
 
@@ -10,9 +10,7 @@ def get_files(num_of_files):
     """
     files = []
 
-    training_data_dir = "Exjobb/Training_Files"
-
-    for entry in os.scandir(training_data_dir):
+    for entry in os.scandir(data_dir):
         if entry.is_file():
             files.append(entry.path)
         if len(files) >= num_of_files:

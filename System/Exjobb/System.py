@@ -5,6 +5,7 @@ from FeatureExtraction import FeatureExtraction
 import sys
 import os
 import numpy as np
+import pickle
 
 sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
@@ -73,7 +74,7 @@ def anomaly_system_prediction(
     if outlier_count/len(z_score_predictions+lof_predictions) > outlier_vs_nonoutlier_prediction_th:
         file_prediction = False # i.e outlier
 
-    return file_prediction
+    return "OK" if file_prediction else "ANOMALY"
 
 def main():
     # Insert what features to use here
@@ -94,16 +95,25 @@ def main():
         "sc_ptp",
     ]
 
-    num_good_gate_files = 50 + 1
-    # Get files for training data
-    files = get_files(num_good_gate_files)
-    # Extract the feature data for training
-    training_data = FeatureExtraction(feature_list, files[ : -1])
-    # Extract the feature data for input data
-    input_data = FeatureExtraction(feature_list, files[-1 : ])
-    print(f"Predicting for files: {files[-1 : ]}")
+    num_of_training_files = 50
+    input_file = get_files(1, "Exjobb/Input_Files/")
+    input_data = FeatureExtraction(feature_list, input_file)
+    assert len(input_file) == 1, "Only one input file is allowed"
+    print(f"Predicting for files: {input_file}...")
+
+    try:
+        with open("Exjobb/training_data.pkl", "rb") as f:
+            training_data = pickle.load(f)
+    except FileNotFoundError:
+        print("No training data found, creating new one...")
+
+        training_files = get_files(num_of_training_files, "Exjobb/Training_Files/")
+        training_data = FeatureExtraction(feature_list, training_files)
+        with open("Exjobb/training_data.pkl", "wb") as f:
+            pickle.dump(training_data, f)
+
     prediction = anomaly_system_prediction(training_data=training_data, input_data=input_data)
-    print(f"Prediction for file: {files[-1 : ]} is: {prediction}")
+    print(f"OUTPUT: {prediction}")
 
 if __name__ == "__main__":
     main()
