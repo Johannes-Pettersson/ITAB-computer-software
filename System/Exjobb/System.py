@@ -1,14 +1,13 @@
-from LOF import calc_lof, calc_and_plot_lof, calc_lof_outlier_factor
-from GetFiles import get_files, get_files_from_directories
-from ZScore import ZScore, plot_z_score
+from LOF import calc_lof
+from GetFiles import get_files
+from ZScore import ZScore
 from FeatureExtraction import FeatureExtraction
 import sys
 import os
 import numpy as np
-import matplotlib.pyplot as plt
 
 sys.path.append(
-    os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 )  # Add the path to the root folder of the git repository
 from FeatureSelection.GetFeatureValue import get_feature_value  # type: ignore
 
@@ -102,7 +101,7 @@ def main():
     training_data = FeatureExtraction(feature_list, files[ : -1])
     # Extract the feature data for input data
     input_data = FeatureExtraction(feature_list, files[-1 : ])
-    print(f"Predicting for files: files[-1 : ]")
+    print(f"Predicting for files: {files[-1 : ]}")
     prediction = anomaly_system_prediction(training_data=training_data, input_data=input_data)
     print(f"Prediction for file: {files[-1 : ]} is: {prediction}")
 

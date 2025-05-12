@@ -1,7 +1,7 @@
 import sys
 import os
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))) # Add the path to the root folder of the git repository
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))) # Add the path to the root folder of the git repository
 from FeatureSelection.GetFeatureValue import get_feature_value # type: ignore
 
 
