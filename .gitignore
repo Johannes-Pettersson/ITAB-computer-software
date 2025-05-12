@@ -5,6 +5,8 @@ __pycache__/
 
 # C extensions
 *.so
+System/Exjobb/*.tkl
+System/Exjobb/training_data.pkl
 
 # Distribution / packaging
 .Python
