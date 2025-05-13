@@ -12,35 +12,6 @@ sys.path.append(
 )  # Add the path to the root folder of the git repository
 from FeatureSelection.GetFeatureValue import get_feature_value  # type: ignore
 
-
-def get_feature_value_list(
-    good_gate_files, faulty_gate_files, feature_1_type, feature_2_type
-):
-    functioning_feature_1_values = []
-    faulty_feature_1_values = []
-
-    functioning_feature_2_values = []
-    faulty_feature_2_values = []
-
-    for file in good_gate_files:
-        functioning_feature_1_values.append(get_feature_value(feature_1_type, file))
-        functioning_feature_2_values.append(get_feature_value(feature_2_type, file))
-
-    for file in faulty_gate_files:
-        faulty_feature_1_values.append(get_feature_value(feature_1_type, file))
-        faulty_feature_2_values.append(get_feature_value(feature_2_type, file))
-
-    combined_good_gate_feature_values = np.vstack(
-        (functioning_feature_1_values, functioning_feature_2_values)
-    ).T
-
-    combined_faulty_gate_feature_values = np.vstack(
-        (faulty_feature_1_values, faulty_feature_2_values)
-    ).T
-
-    return combined_good_gate_feature_values, combined_faulty_gate_feature_values
-
-
 def anomaly_system_prediction(
     training_data: FeatureExtraction,
     input_data: FeatureExtraction,
