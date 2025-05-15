@@ -47,6 +47,31 @@ def anomaly_system_prediction(
 
     return "OK" if file_prediction else "ANOMALY"
 
+def compare_waveform_with_training(input_file):
+    import matplotlib.pyplot as plt
+    import librosa.display
+
+    inp_y, inp_sr = librosa.load(input_file)
+
+    train_y, train_sr = librosa.load("Exjobb/Training_Files/G_G_5.WAV")
+
+    fig, axs = plt.subplots(2, 1)
+    fig.canvas.manager.full_screen_toggle()
+
+    axs[0].set_title("Training Audio Waveform")
+    librosa.display.waveshow(train_y, sr=train_sr, ax=axs[0])
+
+    axs[1].set_title("Input Audio Waveform")
+    librosa.display.waveshow(inp_y, sr=inp_sr, ax=axs[1])
+
+    for ax in axs:
+        ax.set_xlabel("Time (s)")
+        ax.set_ylabel("Amplitude")
+
+    plt.tight_layout()
+    plt.show()
+
+
 def main():
     # Insert what features to use here
     feature_list = [
@@ -65,19 +90,19 @@ def main():
         "sb_mean",
         "sc_ptp",
     ]
-
-    num_of_training_files = 50
+    training_data = None
     input_file = get_files(1, "Exjobb/Input_Files/")
     input_data = FeatureExtraction(feature_list, input_file)
     assert len(input_file) == 1, "Only one input file is allowed"
     print(f"Predicting for files: {input_file}...")
+    compare_waveform_with_training(input_file[0])
 
     try:
         with open("Exjobb/training_data.pkl", "rb") as f:
             training_data = pickle.load(f)
     except FileNotFoundError:
         print("No training data found, creating new one...")
-
+        num_of_training_files = 50
         training_files = get_files(num_of_training_files, "Exjobb/Training_Files/")
         training_data = FeatureExtraction(feature_list, training_files)
         with open("Exjobb/training_data.pkl", "wb") as f:
