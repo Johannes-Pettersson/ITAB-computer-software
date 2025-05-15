@@ -1,6 +1,6 @@
-from LOF import calc_lof
+from LOF import calc_lof, calc_and_plot_lof
 from GetFiles import get_files
-from ZScore import ZScore
+from ZScore import ZScore, plot_z_score
 from FeatureExtraction import FeatureExtraction
 import sys
 import os
@@ -12,40 +12,111 @@ sys.path.append(
 )  # Add the path to the root folder of the git repository
 from FeatureSelection.GetFeatureValue import get_feature_value  # type: ignore
 
-def anomaly_system_prediction(
-    training_data: FeatureExtraction,
-    input_data: FeatureExtraction,
-):
+def anomaly_system_prediction(training_data: FeatureExtraction, input_data: FeatureExtraction):
+    import matplotlib.pyplot as plt
+    from matplotlib.widgets import Button
+
 
     z_score = ZScore()
     evaluation_values = np.ndarray((2, 1))
 
     size_training = len(training_data.features[training_data.feature_list[0]])
     size_features = len(training_data.feature_list)
-
     outlier_vs_nonoutlier_prediction_th = 0.30
-
     training_arr = np.ndarray((2, size_training))
 
-    file_prediction = True # i.e non outlier unless proven otherwise
-    z_score_predictions = []
-    lof_predictions = []
-    for k in range(0, size_features, 2):  # Loops through all feature values in list
+    def deactivate_button(button):
+        button.set_active(False)
+        button.ax.set_visible(False)
+
+    def activate_button(button):
+        button.set_active(True)
+        button.ax.set_visible(True)
+
+
+    fig, axs = plt.subplots(2, 1)
+    fig.canvas.manager.full_screen_toggle()
+    fig.subplots_adjust(bottom=0.2)
+
+    ax_next = plt.axes([0.4, 0.05, 0.15, 0.075])
+    button_next = Button(ax_next, "Next")
+    activate_button(button_next)
+
+    ax_back = plt.axes([0.2, 0.05, 0.15, 0.075])
+    button_back = Button(ax_back, "Back")
+    deactivate_button(button_back)
+
+    ax_close = plt.axes([0.6, 0.05, 0.15, 0.075])
+    button_close = Button(ax_close, "Close")
+    deactivate_button(button_close)
+
+    file_prediction = [True] # i.e non outlier unless proven otherwise
+    z_score_predictions = [0] * (size_features // 2)
+    lof_predictions = [0] * (size_features // 2)
+
+    feature_index = [0]
+
+    def plot_at_index(k):
+
         training_arr[0] = training_data.features[training_data.feature_list[k]]
         training_arr[1] = training_data.features[training_data.feature_list[k + 1]]
-        z_score.train(training_arr)
         evaluation_values[0] = input_data.features[input_data.feature_list[k]]
         evaluation_values[1] = input_data.features[input_data.feature_list[k + 1]]
-        z_score_predictions.append(z_score.predict(evaluation_values))
-        lof_predictions.append(calc_lof(training_arr.T, evaluation_values.T))
-    outlier_count = 0
-    for prediction in z_score_predictions + lof_predictions:
-        if not prediction:
-            outlier_count+=1
-    if outlier_count/len(z_score_predictions+lof_predictions) > outlier_vs_nonoutlier_prediction_th:
-        file_prediction = False # i.e outlier
 
-    return "OK" if file_prediction else "ANOMALY"
+        z_score.train(training_arr)
+        z_score_predictions[k // 2] = z_score.predict(evaluation_values)
+        lof_predictions[k // 2] = calc_lof(training_arr.T, evaluation_values.T)
+
+        axs[0].clear()
+        axs[1].clear()
+
+        label = f"Prediction ({k // 2} / {(size_features // 2) - 1}): {training_data.feature_list[k]} and {training_data.feature_list[k + 1]}"
+        plot_z_score(axs[0], training_arr, evaluation_values, label)
+        calc_and_plot_lof(axs[1], training_arr.T, evaluation_values.T)
+
+        fig.canvas.draw_idle()
+
+    def on_next(event):
+        if feature_index[0] == 0:
+            activate_button(button_back)
+
+        if feature_index[0] < size_features - 2:
+            feature_index[0] += 2
+            plot_at_index(feature_index[0])
+
+        if feature_index[0] >= size_features - 2:
+            outlier_count = 0
+            for prediction in z_score_predictions + lof_predictions:
+                if not prediction:
+                    outlier_count+=1
+            if outlier_count/len(z_score_predictions+lof_predictions) > outlier_vs_nonoutlier_prediction_th:
+                file_prediction[0] = False # Mark as outlier
+
+            activate_button(button_close)
+            deactivate_button(button_next)
+
+    def on_back(event):
+        deactivate_button(button_close)
+        activate_button(button_next)
+
+        if feature_index[0] >= 2:
+            feature_index[0] -= 2
+            if feature_index[0] == 0:
+                deactivate_button(button_back)
+            plot_at_index(feature_index[0])
+
+    def on_close(event):
+            plt.close()
+
+    plot_at_index(feature_index[0])
+
+    next_cid = button_next.on_clicked(on_next)
+    back_cid = button_back.on_clicked(on_back)
+    close_cid = button_close.on_clicked(on_close)
+
+    plt.show()
+
+    return "OK" if file_prediction[0] else "ANOMALY"
 
 def compare_waveform_with_training(input_file):
     import matplotlib.pyplot as plt
@@ -69,8 +140,7 @@ def compare_waveform_with_training(input_file):
         ax.set_ylabel("Amplitude")
 
     plt.tight_layout()
-    plt.show()
-
+    plt.show(block=True)
 
 def main():
     # Insert what features to use here
@@ -90,13 +160,14 @@ def main():
         "sb_mean",
         "sc_ptp",
     ]
-    training_data = None
-    input_file = get_files(1, "Exjobb/Input_Files/")
+    input_file = get_files(1, "Exjobb/Training_Files/")
     input_data = FeatureExtraction(feature_list, input_file)
+
     assert len(input_file) == 1, "Only one input file is allowed"
-    print(f"Predicting for files: {input_file}...")
+
     compare_waveform_with_training(input_file[0])
 
+    training_data = None
     try:
         with open("Exjobb/training_data.pkl", "rb") as f:
             training_data = pickle.load(f)

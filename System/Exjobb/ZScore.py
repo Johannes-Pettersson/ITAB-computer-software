@@ -1,6 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
-
 
 class ZScore:
     """Class for calculating the z-score of the input data."""
@@ -56,6 +54,40 @@ class ZScore:
         z_score_y = (data_point[1] - self.mean_y) / self.std_dev_y
 
         return (abs(z_score_x) + abs(z_score_y)) / 2.0
+
+def plot_z_score(ax, training_data: np.ndarray, data_point: np.ndarray, label):
+    """Plots the training data and the data point with the z-score radius."""
+
+    if training_data.ndim != 2:
+        raise ValueError(
+            f"The training data must be a 2D array, data input is {training_data.ndim}D"
+        )
+
+    if data_point.ndim != 2:
+        raise ValueError(
+            f"The input data must be a 2D array, data input is {data_point.ndim}D"
+        )
+
+    mean_x = np.mean(training_data[0])
+    mean_y = np.mean(training_data[1])
+    std_dev_x = np.std(training_data[0])
+    std_dev_y = np.std(training_data[1])
+    z_score_training_x = (training_data[0] - mean_x) / std_dev_x
+    z_score_training_y = (training_data[1] - mean_y) / std_dev_y
+
+    z_score_other_x = (data_point[0] - mean_x) / std_dev_x
+    z_score_other_y = (data_point[1] - mean_y) / std_dev_y
+
+    ax.set_title(f"{label}\n\nZ-Score")
+    ax.scatter(z_score_training_x, z_score_training_y, color="green", s=20.0, label="Training Data")
+    ax.scatter(z_score_other_x, z_score_other_y, color="red", s=20.0, label="Input Data")
+
+    lim = 7.5
+    # ax.set_xlim(-lim, lim)
+    # ax.set_ylim(-lim, lim)
+    # plt.axhspan(ymin=-3.0, ymax=3.0, xmin=-3.0, xmax=3.0, color="green", alpha=0.1)
+    ax.fill_between(x=np.linspace(-3, 3, 100), y1=-3, y2=3, color="green", alpha=0.1)
+    ax.legend()
 
 if __name__ == "__main__":
     pass
