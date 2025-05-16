@@ -6,128 +6,27 @@ import sys
 import os
 import numpy as np
 import pickle
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
+import librosa.display
+from matplotlib.widgets import Button
 
 sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 )  # Add the path to the root folder of the git repository
 from FeatureSelection.GetFeatureValue import get_feature_value  # type: ignore
 
-def anomaly_system_prediction(training_data: FeatureExtraction, input_data: FeatureExtraction):
-    import matplotlib.pyplot as plt
-    from matplotlib.widgets import Button
+def compare_waveform_with_training(fig, axs, input_file):
 
-
-    z_score = ZScore()
-    evaluation_values = np.ndarray((2, 1))
-
-    size_training = len(training_data.features[training_data.feature_list[0]])
-    size_features = len(training_data.feature_list)
-    outlier_vs_nonoutlier_prediction_th = 0.30
-    training_arr = np.ndarray((2, size_training))
-
-    def deactivate_button(button):
-        button.set_active(False)
-        button.ax.set_visible(False)
-
-    def activate_button(button):
-        button.set_active(True)
-        button.ax.set_visible(True)
-
-
-    fig, axs = plt.subplots(2, 1)
-    fig.canvas.manager.full_screen_toggle()
-    fig.subplots_adjust(bottom=0.2)
-
-    ax_next = plt.axes([0.4, 0.05, 0.15, 0.075])
-    button_next = Button(ax_next, "Next")
-    activate_button(button_next)
-
-    ax_back = plt.axes([0.2, 0.05, 0.15, 0.075])
-    button_back = Button(ax_back, "Back")
-    deactivate_button(button_back)
-
-    ax_close = plt.axes([0.6, 0.05, 0.15, 0.075])
-    button_close = Button(ax_close, "Close")
-    deactivate_button(button_close)
-
-    file_prediction = [True] # i.e non outlier unless proven otherwise
-    z_score_predictions = [0] * (size_features // 2)
-    lof_predictions = [0] * (size_features // 2)
-
-    feature_index = [0]
-
-    def plot_at_index(k):
-
-        training_arr[0] = training_data.features[training_data.feature_list[k]]
-        training_arr[1] = training_data.features[training_data.feature_list[k + 1]]
-        evaluation_values[0] = input_data.features[input_data.feature_list[k]]
-        evaluation_values[1] = input_data.features[input_data.feature_list[k + 1]]
-
-        z_score.train(training_arr)
-        z_score_predictions[k // 2] = z_score.predict(evaluation_values)
-        lof_predictions[k // 2] = calc_lof(training_arr.T, evaluation_values.T)
-
-        axs[0].clear()
-        axs[1].clear()
-
-        label = f"Prediction ({k // 2} / {(size_features // 2) - 1}): {training_data.feature_list[k]} and {training_data.feature_list[k + 1]}"
-        plot_z_score(axs[0], training_arr, evaluation_values, label)
-        calc_and_plot_lof(axs[1], training_arr.T, evaluation_values.T)
-
-        fig.canvas.draw_idle()
-
-    def on_next(event):
-        if feature_index[0] == 0:
-            activate_button(button_back)
-
-        if feature_index[0] < size_features - 2:
-            feature_index[0] += 2
-            plot_at_index(feature_index[0])
-
-        if feature_index[0] >= size_features - 2:
-            outlier_count = 0
-            for prediction in z_score_predictions + lof_predictions:
-                if not prediction:
-                    outlier_count+=1
-            if outlier_count/len(z_score_predictions+lof_predictions) > outlier_vs_nonoutlier_prediction_th:
-                file_prediction[0] = False # Mark as outlier
-
-            activate_button(button_close)
-            deactivate_button(button_next)
-
-    def on_back(event):
-        deactivate_button(button_close)
-        activate_button(button_next)
-
-        if feature_index[0] >= 2:
-            feature_index[0] -= 2
-            if feature_index[0] == 0:
-                deactivate_button(button_back)
-            plot_at_index(feature_index[0])
-
-    def on_close(event):
-            plt.close()
-
-    plot_at_index(feature_index[0])
-
-    next_cid = button_next.on_clicked(on_next)
-    back_cid = button_back.on_clicked(on_back)
-    close_cid = button_close.on_clicked(on_close)
-
-    plt.show()
-
-    return "OK" if file_prediction[0] else "ANOMALY"
-
-def compare_waveform_with_training(input_file):
-    import matplotlib.pyplot as plt
-    import librosa.display
-
-    inp_y, inp_sr = librosa.load(input_file)
+    print("Input file: ", input_file)
+    assert os.path.exists(input_file), "Input file does not exist"
+    assert input_file == "Exjobb/Input_Files/B_G_28.WAV", "Input file is not the correct one"
+    inp_y, inp_sr = librosa.load("Exjobb/Input_Files/B_G_28.WAV")
 
     train_y, train_sr = librosa.load("Exjobb/Training_Files/G_G_5.WAV")
 
-    fig, axs = plt.subplots(2, 1)
-    fig.canvas.manager.full_screen_toggle()
+    axs[0].clear()
+    axs[1].clear()
 
     axs[0].set_title("Training Audio Waveform")
     librosa.display.waveshow(train_y, sr=train_sr, ax=axs[0])
@@ -139,8 +38,156 @@ def compare_waveform_with_training(input_file):
         ax.set_xlabel("Time (s)")
         ax.set_ylabel("Amplitude")
 
-    plt.tight_layout()
-    plt.show(block=True)
+    fig.canvas.draw_idle()
+
+def plot_at_index(fig, axs, input_data: FeatureExtraction, training_data: FeatureExtraction, ix: int, z_score_predictions: list, lof_predictions: list):
+
+    z_score = ZScore()
+    evaluation_values = np.ndarray((2, 1))
+
+    size_training = len(training_data.features[training_data.feature_list[0]])
+    size_features = len(training_data.feature_list)
+    training_arr = np.ndarray((2, size_training))
+
+    training_arr[0] = training_data.features[training_data.feature_list[ix]]
+    training_arr[1] = training_data.features[training_data.feature_list[ix + 1]]
+    evaluation_values[0] = input_data.features[input_data.feature_list[ix]]
+    evaluation_values[1] = input_data.features[input_data.feature_list[ix + 1]]
+    z_score.train(training_arr)
+    z_score_predictions[ix // 2] = z_score.predict(evaluation_values)
+    lof_predictions[ix // 2] = calc_lof(training_arr.T, evaluation_values.T)
+
+    axs[0].clear()
+    axs[1].clear()
+
+    label = f"Prediction ({ix // 2} / {(size_features // 2) - 1}): {training_data.feature_list[ix]} and {training_data.feature_list[ix + 1]}"
+    plot_z_score(axs[0], training_arr, evaluation_values, label)
+    calc_and_plot_lof(axs[1], training_arr.T, evaluation_values.T)
+
+    fig.canvas.draw_idle()
+
+def display_output(fig, axs, file_prediction):
+    try:
+        if file_prediction[0]:
+            img_path = "Exjobb/sigma_gate_happy.png"
+        else:
+            img_path = "Exjobb/sigma_gate_sad.png"
+
+        img = mpimg.imread(img_path)
+        axs.imshow(img)
+    except FileNotFoundError:
+        print("Image file not found")
+    axs.axis("off")
+    fig.canvas.draw_idle()
+
+def state_machine_system_graphics(input_file, input_data: FeatureExtraction, training_data: FeatureExtraction):
+
+    # ----------------- VARIABLES DECLARED START HERE ----------------
+
+    state = ["s_waveform"]
+    feature_index = [0]
+
+    z_score_predictions = [0] * (len(input_data.feature_list) // 2)
+    lof_predictions = [0] * (len(input_data.feature_list) // 2)
+    file_prediction = [True]  # i.e non outlier unless proven otherwise
+    outlier_vs_nonoutlier_prediction_th = 0.30
+
+    fig, axs = plt.subplots(2, 1)
+    fig.canvas.manager.full_screen_toggle()
+
+    ax_next, ax_back, ax_close = None, None, None
+    button_next, button_back, button_close = None, None, None
+
+    # ----------------- VARIABLES DECLARED END HERE ----------------
+
+    # ----------------- INTERNAL FUNCTIONS START HERE ----------------
+
+    def deactivate_button(button):
+        button.set_active(False)
+        button.ax.set_visible(False)
+
+    def activate_button(button):
+        button.set_active(True)
+        button.ax.set_visible(True)
+
+    def on_next(event):
+
+        if state[0] == "s_waveform":
+            state[0] = "s_features"
+            recreate_figure(1, 2)
+            feature_index[0] = 0
+            plot_at_index(fig, axs, input_data, training_data, feature_index[0], z_score_predictions, lof_predictions)
+
+        elif state[0] == "s_features":
+            if feature_index[0] < len(input_data.feature_list) - 2:
+                feature_index[0] += 2
+                plot_at_index(fig, axs, input_data, training_data, feature_index[0], z_score_predictions, lof_predictions)
+
+            if feature_index[0] >= len(input_data.feature_list) - 2:
+                state[0] = "s_result"
+                outlier_count = 0
+                for prediction in z_score_predictions + lof_predictions:
+                    if not prediction:
+                        outlier_count += 1
+                if outlier_count / len(z_score_predictions + lof_predictions) > outlier_vs_nonoutlier_prediction_th:
+                    file_prediction[0] = False
+
+        elif state[0] == "s_result":
+            recreate_figure(1, 1)
+            display_output(fig, axs, file_prediction)
+            print("OUTPUT: ", "OK" if file_prediction[0] else "ANOMALY")
+
+
+    def on_back(event):
+        if state[0] == "s_waveform":
+            return
+
+        elif state[0] == "s_features":
+            if feature_index[0] >= 2:
+                feature_index[0] -= 2
+                plot_at_index(fig, axs, input_data, training_data, feature_index[0], z_score_predictions, lof_predictions)
+            else:
+                state[0] = "s_waveform"
+                recreate_figure(2, 1)
+                compare_waveform_with_training(fig, axs, input_file)
+        elif state[0] == "s_result":
+            state[0] = "s_features"
+            recreate_figure(1, 2)
+            feature_index[0] = len(input_data.feature_list) - 2
+            plot_at_index(fig, axs, input_data, training_data, feature_index[0], z_score_predictions, lof_predictions)
+
+    def on_close(event):
+        plt.close()
+
+    def recreate_figure(nrows, ncols):
+        nonlocal axs, ax_next, ax_back, ax_close
+        nonlocal button_next, button_back, button_close
+
+        fig.clf()
+
+        axs = fig.subplots(nrows, ncols)
+        fig.subplots_adjust(bottom=0.2)
+
+        ax_next = plt.axes([0.4, 0.05, 0.15, 0.075])
+        button_next = Button(ax_next, "Next")
+        button_next.on_clicked(on_next)
+        activate_button(button_next)
+
+        ax_back = plt.axes([0.2, 0.05, 0.15, 0.075])
+        button_back = Button(ax_back, "Back")
+        button_back.on_clicked(on_back)
+        activate_button(button_back)
+
+        ax_close = plt.axes([0.6, 0.05, 0.15, 0.075])
+        button_close = Button(ax_close, "Close")
+        button_close.on_clicked(on_close)
+        activate_button(button_close)
+
+    # ----------------- INTERNAL FUNCTINOS END HERE ----------------
+
+    recreate_figure(2, 1)
+    compare_waveform_with_training(fig, axs, input_file)
+    plt.show()
 
 def main():
     # Insert what features to use here
@@ -160,14 +207,12 @@ def main():
         "sb_mean",
         "sc_ptp",
     ]
-    input_file = get_files(1, "Exjobb/Training_Files/")
-    input_data = FeatureExtraction(feature_list, input_file)
-
+    input_file = get_files(1, "Exjobb/Input_Files/")
     assert len(input_file) == 1, "Only one input file is allowed"
 
-    compare_waveform_with_training(input_file[0])
-
+    input_data = FeatureExtraction(feature_list, input_file)
     training_data = None
+
     try:
         with open("Exjobb/training_data.pkl", "rb") as f:
             training_data = pickle.load(f)
@@ -179,8 +224,7 @@ def main():
         with open("Exjobb/training_data.pkl", "wb") as f:
             pickle.dump(training_data, f)
 
-    prediction = anomaly_system_prediction(training_data=training_data, input_data=input_data)
-    print(f"OUTPUT: {prediction}")
+    state_machine_system_graphics(input_file[0], input_data, training_data)
 
 if __name__ == "__main__":
     main()
