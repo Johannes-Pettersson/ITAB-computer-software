@@ -38,7 +38,7 @@ def calc_lof(data: np.ndarray, data_point, n_neighbors=20) -> bool:
     return labels[-1] == 1
 
 
-def calc_and_plot_lof(data: np.ndarray, data_point=None, n_neighbors=20):
+def calc_and_plot_lof(ax, data: np.ndarray, data_point=None, n_neighbors=20, y_label = "", x_label = ""):
     # Number of neighbors is either 20 or 50% of the length of the training data.
     n_neighbors = min(n_neighbors, ceil(len(data)*0.5))
 
@@ -55,53 +55,31 @@ def calc_and_plot_lof(data: np.ndarray, data_point=None, n_neighbors=20):
 
     X_scores = estimator.negative_outlier_factor_
 
-    if data.shape[1] == 2:
-        if data_point is not None:
-            dot_colors = ["k" if i < len(labels)-1 else "g" for i in range(len(labels))]
-        else:
-            dot_colors = ["k" for _ in range(len(labels))]
-        plt.scatter(data[:, 0], data[:, 1], color=dot_colors, s=3.0)
-
-        perimiter_colors = [(1,0,0,0.5) if label == -1 else (0,0,0,0) for label in labels]
-        if perimiter_colors[-1] != (0,0,0,0):
-            perimiter_colors[-1] = (0,1,0,0.5)
-
-        radius = (X_scores.max() - X_scores) / (X_scores.max() - X_scores.min())
-        plt.scatter(
-            data[:, 0],
-            data[:, 1],
-            s=1000 * radius,
-            edgecolors=["r" if color == "k" else "g" for color in dot_colors],
-            facecolors=perimiter_colors,
-            label="Outlier scores",
-        )
-    elif data.shape[1] == 1:
-        if data_point is not None:
-            dot_colors = ["k" if i < len(labels)-1 else "g" for i in range(len(labels))]
-        else:
-            dot_colors = ["k" for _ in range(len(labels))]
-        plt.scatter(data, np.zeros(len(data)), color=dot_colors, s=3.0)
-
-        perimiter_colors = [(1,0,0,0.5) if label == -1 else (0,0,0,0) for label in labels]
-        if perimiter_colors[-1] != (0,0,0,0):
-            perimiter_colors[-1] = (0,1,0,0.5)
-
-        radius = (X_scores.max() - X_scores) / (X_scores.max() - X_scores.min())
-        plt.scatter(
-            data,
-            np.zeros(len(data)),
-            s=1000 * radius,
-            edgecolors=["r" if color == "k" else "g" for color in dot_colors],
-            facecolors=perimiter_colors,
-            label="Outlier scores",
-        )
-
-    plt.axis("tight")
     if data_point is not None:
-        plt.title(f"LOF. Outlier? -> {labels[-1] == -1}")
+        dot_colors = ["green" if i < len(labels)-1 else "red" for i in range(len(labels))]
     else:
-        plt.title("LOF")
-    plt.show()
+        dot_colors = ["k" for _ in range(len(labels))]
+    ax.scatter(data[:, 0], data[:, 1], color=dot_colors, s=20.0)
+
+    #perimiter_colors = [(1,0,0,0.5) if label == -1 else (0,0,0,0) for label in labels]
+    perimiter_colors = [(0,0,0,0) for label in labels]
+
+    if perimiter_colors[-1] != (0,0,0,0):
+        perimiter_colors[-1] = (0,1,0,0.5)
+
+    radius = (X_scores.max() - X_scores) / (X_scores.max() - X_scores.min())
+    ax.scatter(
+        data[:, 0],
+        data[:, 1],
+        s=1000 * radius,
+        edgecolors=[(.1,.1,.1,0.5) for color in dot_colors],
+        facecolors=perimiter_colors,
+        label="Outlier scores",
+    )
+
+    ax.set_title("Local Outlier Factor")
+    ax.set_xlabel(x_label)
+    ax.set_ylabel(y_label)
 
 def main():
 

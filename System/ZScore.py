@@ -67,8 +67,9 @@ class ZScore:
         return (abs(z_score_x) + abs(z_score_y)) / 2.0
 
 
-def plot_z_score(training_data: np.ndarray, data_point: np.ndarray):
+def plot_z_score(ax, training_data: np.ndarray, data_point: np.ndarray, y_label, x_label):
     """Plots the training data and the data point with the z-score radius."""
+
     if training_data.ndim != 2:
         raise ValueError(
             f"The training data must be a 2D array, data input is {training_data.ndim}D"
@@ -78,7 +79,6 @@ def plot_z_score(training_data: np.ndarray, data_point: np.ndarray):
         raise ValueError(
             f"The input data must be a 2D array, data input is {data_point.ndim}D"
         )
-
     mean_x = np.mean(training_data[0])
     mean_y = np.mean(training_data[1])
     std_dev_x = np.std(training_data[0])
@@ -89,55 +89,18 @@ def plot_z_score(training_data: np.ndarray, data_point: np.ndarray):
     z_score_other_x = (data_point[0] - mean_x) / std_dev_x
     z_score_other_y = (data_point[1] - mean_y) / std_dev_y
 
-    plt.scatter(
-        z_score_training_x, z_score_training_y, color="g", s=20.0, label="Training"
-    )
-    plt.scatter(z_score_other_x, z_score_other_y, color="b", s=20.0, label="Input Data")
+    ax.set_title("Z-Score")
+    ax.scatter(z_score_training_x, z_score_training_y, color="green", s=20.0, label="Training Data")
+    ax.scatter(z_score_other_x, z_score_other_y, color="red", s=20.0, label="Input Data")
 
-    # Set threshold lines to 3.0 standard deviations
-    plt.axvline(x=3.0, color="r", linestyle="--")
-    plt.axvline(x=-3.0, color="r", linestyle="--")
-    plt.axhline(y=3.0, color="r", linestyle="--")
-    plt.axhline(y=-3.0, color="r", linestyle="--")
+    ax.fill_between(x=np.linspace(-3, 3, 100), y1=-3, y2=3, color="green", alpha=0.1)
+    ax.legend()
 
-    plt.legend(loc="upper right")
-    plt.show()
-
-
-def get_files(num_of_good_gate_files, num_of_faulty_gate_files):
-    good_gate_files = []
-    faulty_gate_files = []
-
-    functioning_directories = [
-        "../Recording/Functioning_gate_recordings/Day 2/Session 1",
-        "../Recording/Functioning_gate_recordings/Day 2/Session 2",
-    ]
-
-    faulty_directories = [
-        "../Recording/Faulty_gate_recordings/Day 2/Session 1",
-        "../Recording/Faulty_gate_recordings/Day 2/Session 2",
-    ]
-
-    for path in functioning_directories:
-        for entry in os.scandir(path):
-            if entry.is_file():
-                good_gate_files.append(entry.path)
-
-    for path in faulty_directories:
-        for entry in os.scandir(path):
-            if entry.is_file():
-                faulty_gate_files.append(entry.path)
-
-    while len(good_gate_files) > num_of_good_gate_files:
-        good_gate_files.pop()
-
-    while len(faulty_gate_files) > num_of_faulty_gate_files:
-        faulty_gate_files.pop()
-
-    return good_gate_files, faulty_gate_files
-
+    ax.set_xlabel(x_label)
+    ax.set_ylabel(y_label)
 
 def main():
+    from GetFiles import get_files
     num_of_good_gate_files = 20
     num_of_faulty_gate_files = 10
     num_of_training_files = 10

@@ -8,16 +8,13 @@ def set_led_color(payload):
     try:
         load_dotenv(override=True)
         url = os.getenv("GATE_URL")
-        print("url: ", url)
-
         headers = {
             "Content-Type": "application/json",
         }
         response = requests.post(url, json=payload, headers=headers, timeout=0.5)
-        if response.status_code != 200:
-            print(f"Failed to send light command: {response.status_code}")
-    except requests.exceptions.RequestException as e:
-                print(f"Error sending light command: {e}")
+        response.raise_for_status()
+    except Exception as e:
+        raise e
 
 def gate_blink_sequence(color):
     """
@@ -28,8 +25,8 @@ def gate_blink_sequence(color):
     red = 255 if color == "red" else 0
     green = 255 if color == "green" else 0
 
-    print(f"Starting blink sequence with color: {color}")
-
+    error_count = 0
+    max_errors = 3
 
     for i in range(10):
         try:
@@ -41,7 +38,10 @@ def gate_blink_sequence(color):
             }
             set_led_color(payload)
         except Exception as e:
-             print(f"Error when sending payload: {e}")
+             error_count += 1
+             if error_count >= max_errors:
+                print("Max errors reached, stopping the sequence.")
+                return
         time.sleep(0.5)
 
     # Ensure the light is turned off after the sequence
