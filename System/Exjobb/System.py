@@ -18,9 +18,7 @@ from FeatureSelection.GetFeatureValue import get_feature_value  # type: ignore
 
 def compare_waveform_with_training(fig, axs, input_file):
 
-    print("Input file: ", input_file)
     assert os.path.exists(input_file), "Input file does not exist"
-    assert input_file == "Exjobb/Input_Files/B_G_28.WAV", "Input file is not the correct one"
     inp_y, inp_sr = librosa.load("Exjobb/Input_Files/B_G_28.WAV")
 
     train_y, train_sr = librosa.load("Exjobb/Training_Files/G_G_5.WAV")
@@ -39,6 +37,25 @@ def compare_waveform_with_training(fig, axs, input_file):
         ax.set_ylabel("Amplitude")
 
     fig.canvas.draw_idle()
+
+def feature_label(feature_list):
+    feature_labels = {
+        "rmse_max": "Root Mean Square (max)",
+        "ae_mean": "Amplitude Envelope (mean)",
+        "ae_std": "Amplitude Envelope (std)",
+        "rmse_std": "Root Mean Square (std)",
+        "zcr_mean": "Zero Crossing Rate (mean)",
+        "rmse_mean": "Root Mean Square (mean)",
+        "sb_min": "Spectral Bandwidth (min)",
+        "mfcc_kurtosis": "MFCC (kurtosis)",
+        "sb_ptp": "Spectral Bandwidth (peak to peak)",
+        "zcr_total": "Zero Crossing Rate (total)",
+        "sc_min": "Spectral Centroid (min)",
+        "ber_mean": "Bandwidth Energy Ratio (mean)",
+        "sb_mean": "Spectral Bandwidth (mean)",
+        "sc_ptp": "Spectral Centroid (peak to peak)",
+    }
+    return [feature_labels[feature] for feature in feature_list]
 
 def plot_at_index(fig, axs, input_data: FeatureExtraction, training_data: FeatureExtraction, ix: int, z_score_predictions: list, lof_predictions: list):
 
@@ -59,10 +76,12 @@ def plot_at_index(fig, axs, input_data: FeatureExtraction, training_data: Featur
 
     axs[0].clear()
     axs[1].clear()
+    feature_x, feature_y = feature_label(training_data.feature_list[ix : ix + 2])
+    print(f"ix: {ix}, ix+2: {ix + 2}")
+    fig.suptitle(f"Prediction ( {(ix // 2) + 1} / {(size_features // 2)})")
 
-    label = f"Prediction ({ix // 2} / {(size_features // 2) - 1}): {training_data.feature_list[ix]} and {training_data.feature_list[ix + 1]}"
-    plot_z_score(axs[0], training_arr, evaluation_values, label)
-    calc_and_plot_lof(axs[1], training_arr.T, evaluation_values.T)
+    plot_z_score(axs[0], training_arr, evaluation_values, feature_y, feature_x)
+    calc_and_plot_lof(axs[1], training_arr.T, evaluation_values.T, y_label = feature_y, x_label = feature_x)
 
     fig.canvas.draw_idle()
 
@@ -122,25 +141,27 @@ def state_machine_system_graphics(input_file, input_data: FeatureExtraction, tra
             if feature_index[0] < len(input_data.feature_list) - 2:
                 feature_index[0] += 2
                 plot_at_index(fig, axs, input_data, training_data, feature_index[0], z_score_predictions, lof_predictions)
+                if feature_index[0] == len(input_data.feature_list) - 2:
+                    outlier_count = 0
+                    for prediction in z_score_predictions + lof_predictions:
+                        if not prediction:
+                            outlier_count += 1
+                    if outlier_count / len(z_score_predictions + lof_predictions) > outlier_vs_nonoutlier_prediction_th:
+                        file_prediction[0] = False
 
-            if feature_index[0] >= len(input_data.feature_list) - 2:
+            elif feature_index[0] >= len(input_data.feature_list) - 2:
                 state[0] = "s_result"
-                outlier_count = 0
-                for prediction in z_score_predictions + lof_predictions:
-                    if not prediction:
-                        outlier_count += 1
-                if outlier_count / len(z_score_predictions + lof_predictions) > outlier_vs_nonoutlier_prediction_th:
-                    file_prediction[0] = False
+                recreate_figure(1, 1)
+                display_output(fig, axs, file_prediction)
+                print("OUTPUT: ", "OK" if file_prediction[0] else "ANOMALY")
 
         elif state[0] == "s_result":
-            recreate_figure(1, 1)
-            display_output(fig, axs, file_prediction)
-            print("OUTPUT: ", "OK" if file_prediction[0] else "ANOMALY")
+            pass
 
 
     def on_back(event):
         if state[0] == "s_waveform":
-            return
+            pass
 
         elif state[0] == "s_features":
             if feature_index[0] >= 2:
@@ -168,17 +189,25 @@ def state_machine_system_graphics(input_file, input_data: FeatureExtraction, tra
         axs = fig.subplots(nrows, ncols)
         fig.subplots_adjust(bottom=0.2)
 
-        ax_next = plt.axes([0.4, 0.05, 0.15, 0.075])
-        button_next = Button(ax_next, "Next")
-        button_next.on_clicked(on_next)
-        activate_button(button_next)
+        button_width = 0.12
+        button_height = 0.06
+        button_y = 0.02
 
-        ax_back = plt.axes([0.2, 0.05, 0.15, 0.075])
+        back_x = 0.25 - button_width / 2
+        next_x = 0.5 - button_width / 2
+        close_x = 0.75 - button_width / 2
+
+        ax_back = plt.axes([back_x, button_y, button_width, button_height])
         button_back = Button(ax_back, "Back")
         button_back.on_clicked(on_back)
         activate_button(button_back)
 
-        ax_close = plt.axes([0.6, 0.05, 0.15, 0.075])
+        ax_next = plt.axes([next_x, button_y, button_width, button_height])
+        button_next = Button(ax_next, "Next")
+        button_next.on_clicked(on_next)
+        activate_button(button_next)
+
+        ax_close = plt.axes([close_x, button_y, button_width, button_height])
         button_close = Button(ax_close, "Close")
         button_close.on_clicked(on_close)
         activate_button(button_close)
@@ -207,7 +236,7 @@ def main():
         "sb_mean",
         "sc_ptp",
     ]
-    input_file = get_files(1, "Exjobb/Input_Files/")
+    input_file = get_files(1, "Exjobb/Training_Files/")
     assert len(input_file) == 1, "Only one input file is allowed"
 
     input_data = FeatureExtraction(feature_list, input_file)
