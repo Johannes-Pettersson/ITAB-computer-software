@@ -10,16 +10,52 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import librosa.display
 from matplotlib.widgets import Button
+import threading
+from Gate_Light_Control import gate_blink_sequence
 
 sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 )  # Add the path to the root folder of the git repository
 from FeatureSelection.GetFeatureValue import get_feature_value  # type: ignore
 
+def system_prediction(input_data: FeatureExtraction, training_data: FeatureExtraction):
+    z_score = ZScore()
+    evaluation_values = np.ndarray((2, 1))
+
+    size_training = len(training_data.features[training_data.feature_list[0]])
+    size_features = len(training_data.feature_list)
+    training_arr = np.ndarray((2, size_training))
+
+    prediction = True # i.e non outlier unless proven otherwise
+    z_score_predictions = []
+    lof_predictions = []
+
+    outlier_vs_nonoutlier_prediction_th = 0.30
+
+    for i in range(0, size_features, 2):  # Loops through all features in pairs
+        training_arr[0] = training_data.features[training_data.feature_list[i]]
+        training_arr[1] = training_data.features[training_data.feature_list[i + 1]]
+        z_score.train(training_arr)
+        evaluation_values[0] = input_data.features[input_data.feature_list[i]]
+        evaluation_values[1] = input_data.features[input_data.feature_list[i + 1]]
+        z_score_predictions.append(z_score.predict(evaluation_values))
+        lof_predictions.append(calc_lof(training_arr.T, evaluation_values.T))
+    outlier_count = 0
+    for prediction in z_score_predictions + lof_predictions:
+        if not prediction:
+            outlier_count+=1
+    if outlier_count/len(z_score_predictions+lof_predictions) > outlier_vs_nonoutlier_prediction_th:
+        prediction = False # i.e outlier
+
+    if prediction:
+        gate_blink_sequence("green")
+    else:
+        gate_blink_sequence("red")
+
 def compare_waveform_with_training(fig, axs, input_file):
 
     assert os.path.exists(input_file), "Input file does not exist"
-    inp_y, inp_sr = librosa.load("Exjobb/Input_Files/B_G_28.WAV")
+    inp_y, inp_sr = librosa.load(input_file)
 
     train_y, train_sr = librosa.load("Exjobb/Training_Files/G_G_5.WAV")
 
@@ -77,7 +113,6 @@ def plot_at_index(fig, axs, input_data: FeatureExtraction, training_data: Featur
     axs[0].clear()
     axs[1].clear()
     feature_x, feature_y = feature_label(training_data.feature_list[ix : ix + 2])
-    print(f"ix: {ix}, ix+2: {ix + 2}")
     fig.suptitle(f"Prediction ( {(ix // 2) + 1} / {(size_features // 2)})")
 
     plot_z_score(axs[0], training_arr, evaluation_values, feature_y, feature_x)
@@ -212,7 +247,7 @@ def state_machine_system_graphics(input_file, input_data: FeatureExtraction, tra
         button_close.on_clicked(on_close)
         activate_button(button_close)
 
-    # ----------------- INTERNAL FUNCTINOS END HERE ----------------
+    # ----------------- INTERNAL FUNCTIONS END HERE ----------------
 
     recreate_figure(2, 1)
     compare_waveform_with_training(fig, axs, input_file)
@@ -253,7 +288,11 @@ def main():
         with open("Exjobb/training_data.pkl", "wb") as f:
             pickle.dump(training_data, f)
 
+    prediction_th = threading.Thread(target=system_prediction, args=(input_data, training_data), daemon=True)
+    prediction_th.start()
+
     state_machine_system_graphics(input_file[0], input_data, training_data)
+    prediction_th.join()
 
 if __name__ == "__main__":
     main()
