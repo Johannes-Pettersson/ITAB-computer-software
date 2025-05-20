@@ -116,8 +116,8 @@ def plot_at_index(fig, axs, input_data: FeatureExtraction, training_data: Featur
     feature_x, feature_y = feature_label(training_data.feature_list[ix : ix + 2])
     fig.suptitle(f"Prediction ( {(ix // 2) + 1} / {(size_features // 2)})")
 
-    plot_z_score(axs[0], training_arr, evaluation_values, feature_y, feature_x)
-    calc_and_plot_lof(axs[1], training_arr.T, evaluation_values.T, y_label = feature_y, x_label = feature_x)
+    plot_z_score(axs[0], training_arr, evaluation_values, feature_y, feature_x, z_score_predictions[ix // 2])
+    calc_and_plot_lof(axs[1], training_arr.T, evaluation_values.T, y_label = feature_y, x_label = feature_x, prediction=lof_predictions[ix // 2])
 
     fig.canvas.draw_idle()
 
@@ -133,6 +133,8 @@ def display_output(fig, axs, file_prediction):
     except FileNotFoundError:
         print("Image file not found")
     axs.axis("off")
+    title = "FINAL OUTPUT: " + ("OK" if file_prediction[0] else "ANOMALY")
+    fig.suptitle(title)
     fig.canvas.draw_idle()
 
 def state_machine_system_graphics(input_file, input_data: FeatureExtraction, training_data: FeatureExtraction):

@@ -38,7 +38,7 @@ def calc_lof(data: np.ndarray, data_point, n_neighbors=20) -> bool:
     return labels[-1] == 1
 
 
-def calc_and_plot_lof(ax, data: np.ndarray, data_point=None, n_neighbors=20, y_label = "", x_label = ""):
+def calc_and_plot_lof(ax, data: np.ndarray, data_point=None, n_neighbors=20, y_label = "", x_label = "", prediction=None):
     # Number of neighbors is either 20 or 50% of the length of the training data.
     n_neighbors = min(n_neighbors, ceil(len(data)*0.5))
 
@@ -76,8 +76,8 @@ def calc_and_plot_lof(ax, data: np.ndarray, data_point=None, n_neighbors=20, y_l
         facecolors=perimiter_colors,
         label="Outlier scores",
     )
-
-    ax.set_title("Local Outlier Factor")
+    title = "Local Outlier Factor - Predicts: " + ("OK" if prediction == 1 else "ANOMALY")
+    ax.set_title(title)
     ax.set_xlabel(x_label)
     ax.set_ylabel(y_label)
 

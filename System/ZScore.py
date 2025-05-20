@@ -66,8 +66,7 @@ class ZScore:
 
         return (abs(z_score_x) + abs(z_score_y)) / 2.0
 
-
-def plot_z_score(ax, training_data: np.ndarray, data_point: np.ndarray, y_label, x_label):
+def plot_z_score(ax, training_data: np.ndarray, data_point: np.ndarray, y_label, x_label, prediction):
     """Plots the training data and the data point with the z-score radius."""
 
     if training_data.ndim != 2:
@@ -89,7 +88,8 @@ def plot_z_score(ax, training_data: np.ndarray, data_point: np.ndarray, y_label,
     z_score_other_x = (data_point[0] - mean_x) / std_dev_x
     z_score_other_y = (data_point[1] - mean_y) / std_dev_y
 
-    ax.set_title("Z-Score")
+    title = "Z-Score - Predicts: " + ("OK" if prediction else "ANOMALY")
+    ax.set_title(title)
     ax.scatter(z_score_training_x, z_score_training_y, color="green", s=20.0, label="Training Data")
     ax.scatter(z_score_other_x, z_score_other_y, color="red", s=20.0, label="Input Data")
 
