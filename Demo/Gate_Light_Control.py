@@ -1,6 +1,7 @@
 import requests
 import time
 import os
+import json
 from dotenv import load_dotenv
 
 
@@ -52,6 +53,20 @@ def gate_blink_sequence(color):
         "state": "exit_closed_arm",
     }
     set_led_color(payload)
+
+def gate_sequence():
+    url = os.getenv("GATE_URL")
+
+    payload = json.dumps({
+    "id": int(os.getenv("GATE_ID")),
+    "open_count": 1
+    })
+    headers = {
+    'Content-Type': 'application/json'
+    }
+    response = requests.request("POST", url, headers=headers, data=payload)
+
+    return response.text
 
 
 if __name__ == "__main__":

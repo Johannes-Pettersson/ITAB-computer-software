@@ -7,7 +7,7 @@ import matplotlib.image as mpimg
 import librosa.display
 from matplotlib.widgets import Button
 import threading
-from Gate_Light_Control import gate_blink_sequence
+from Gate_Light_Control import gate_blink_sequence, gate_sequence
 
 sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname(__file__), "../"))
@@ -17,6 +17,7 @@ from System.GetFiles import get_files_from_single_dir # type: ignore
 from System.FeatureExtraction import FeatureExtraction # type: ignore
 from System.ZScore import ZScore, plot_z_score # type: ignore
 from System.LOF import calc_lof, calc_and_plot_lof # type: ignore
+from Recording.usb_mic import UsbRecorder # type: ignore
 
 def system_prediction(input_data: FeatureExtraction, training_data: FeatureExtraction):
     z_score = ZScore()
@@ -270,8 +271,17 @@ def main():
         "sb_mean",
         "sc_ptp",
     ]
-    input_file = get_files_from_single_dir(1, "Input_Files/")
-    assert len(input_file) == 1, "Only one input file is allowed"
+
+    file_name = "Input_Files/B_G_25.WAV"
+    input_file = [file_name]
+
+    gate_sequence_th = threading.Thread(target=gate_sequence, daemon=True)
+    gate_sequence_th.start()
+
+    usb_recorder = UsbRecorder()
+    usb_recorder.record(file_name)
+
+    gate_sequence_th.join()
 
     input_data = FeatureExtraction(feature_list, input_file)
     training_data = None
