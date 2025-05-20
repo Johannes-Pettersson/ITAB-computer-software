@@ -69,7 +69,18 @@ def compare_waveform_with_training(fig, axs, input_file):
     axs[1].set_title("Input Audio Waveform")
     librosa.display.waveshow(inp_y, sr=inp_sr, ax=axs[1])
 
+    y_min = np.inf
+    y_max = -np.inf
+
     for ax in axs:
+        lines = ax.get_lines()
+        for line in lines:
+            y_data = line.get_ydata()
+            y_min = min(y_min, np.min(y_data))
+            y_max = max(y_max, np.max(y_data))
+
+    for ax in axs:
+        ax.set_ylim(y_min, y_max)
         ax.set_xlabel("Time (s)")
         ax.set_ylabel("Amplitude")
 
