@@ -6,7 +6,7 @@ class UsbRecorder():
     def __init__(self):
         self.sample_rate = 48000
         self.channels = 1
-        self.device_index = 0 # Check with sd.query_devices()
+        self.device_index = 1 # Check with sd.query_devices()
 
     def record(self, file_name, duration=6):
         print("Recording...")

@@ -253,6 +253,22 @@ def state_machine_system_graphics(input_file, input_data: FeatureExtraction, tra
     compare_waveform_with_training(fig, axs, input_file)
     plt.show()
 
+def retrain_system():
+    try:
+        os.remove("training_data.pkl")
+        print("Pickle file deleted")
+    except FileNotFoundError:
+        print("No pickle file found for deletion")
+
+    usb_recorder = UsbRecorder()
+    for i in range(50):
+        file_name = f"Training_Files/G_G_{i}.WAV"
+        gate_sequence_th = threading.Thread(target=gate_sequence, daemon=True)
+        gate_sequence_th.start()
+        usb_recorder.record(file_name)
+
+        gate_sequence_th.join()
+
 def main():
     # Insert what features to use here
     feature_list = [
@@ -272,7 +288,7 @@ def main():
         "sc_ptp",
     ]
 
-    file_name = "Input_Files/B_G_25.WAV"
+    file_name = "Input_Files/Input.WAV"
     input_file = [file_name]
 
     gate_sequence_th = threading.Thread(target=gate_sequence, daemon=True)

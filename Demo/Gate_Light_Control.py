@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 def set_led_color(payload):
     try:
         load_dotenv(override=True)
-        url = os.getenv("GATE_URL")
+        url = os.getenv("GATE_URL") + "/set_led_color"
         headers = {
             "Content-Type": "application/json",
         }
@@ -55,7 +55,8 @@ def gate_blink_sequence(color):
     set_led_color(payload)
 
 def gate_sequence():
-    url = os.getenv("GATE_URL")
+    load_dotenv(override=True)
+    url = os.getenv("GATE_URL") + "/open_count"
 
     payload = json.dumps({
     "id": int(os.getenv("GATE_ID")),
