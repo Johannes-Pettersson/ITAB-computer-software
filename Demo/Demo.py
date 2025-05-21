@@ -342,6 +342,7 @@ def state_machine_system_graphics():
             state_home(fig, axs)
 
         elif state[0] == "s_waveform":
+            file_prediction[0] = True
             state[0] = "s_recording"
             recreate_figure(1, 1)
             input_data = state_recording(fig, axs, training_data)
@@ -363,6 +364,7 @@ def state_machine_system_graphics():
             state_features(fig, axs, input_data, training_data, feature_index[0], z_score_predictions, lof_predictions)
 
     def on_home(event):
+        file_prediction[0] = True
         state[0] = "s_home"
         recreate_figure(1, 1)
         state_home(fig, axs)
