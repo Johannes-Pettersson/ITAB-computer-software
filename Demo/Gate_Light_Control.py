@@ -49,7 +49,7 @@ def gate_blink_sequence(color):
     payload = {
         "red": int(0),
         "green": int(0),
-        "blue": int(0),
+        "blue": int(255),
         "state": "exit_closed_arm",
     }
     set_led_color(payload)
