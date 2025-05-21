@@ -333,6 +333,7 @@ def state_machine_system_graphics():
             pass
 
     def on_back(event):
+        nonlocal input_data
         if state[0] == "s_home":
             pass
 
