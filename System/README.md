@@ -1,18 +1,23 @@
 # SYSTEM
 
-## Folder structure
+## File structure
 
 ```bash
 System/
 ├── README.md
 ├── requirements.txt
-├── Features/
-├── Classifiers/
+├── FeatureExtraction.py
+├── LOF.py
+├── ZScore.py
+├── GetFiles.py
 └── System.py
 ```
 
-- **Features**: Contains the calculations for each feature, one file for each feature.
-- **Classifiers**: Contains the anomaly detection systems - Z-Score and Local Outlier Factor.
+- **FeatureExtraction**: Contains the featureExtraction class, used to hold all feature values that is extracted from a audio recording.
+- **GetFiles**: This could be used to retrieve all files from a selected folder.
+- **System**: Contains functionality to do a single prediction, where you can chose what training data should be used for the system.
+- **ZScore**: Contain calculation and plotting of the ZScore algorithm.
+- **LOF**: Contains the calculation and plotting of the Local Outlier Factor algorithm.
 
 ## Installation
 
