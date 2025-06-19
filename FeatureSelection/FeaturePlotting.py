@@ -58,10 +58,11 @@ def plot_one_dim(data1_title, data1, data1_labels, data2_title, data2, data2_lab
     sc1 = ax.scatter(data1, y1, color=data1_color, label=data1_title, picker=True)
     sc2 = ax.scatter(data2, y2, color=data2_color, label=data2_title, picker=True)
 
-    plt.xlabel(xlabel)
+    plt.xlabel(xlabel, fontsize=14)
     plt.ylim(-20, 20)
     plt.yticks([])
-    plt.legend(loc="upper right")
+    plt.xticks(fontsize=14)
+    plt.legend(loc="upper right", fontsize=16)
     plt.grid(True)
 
     tooltip = ax.text(0, 0, "", fontsize=10, color="black", bbox=dict(facecolor='white', alpha=0.7))
@@ -294,15 +295,21 @@ def main():
 # ]
 #     for feat in feat_list:
 #         plot_one_feature(feat, 700, 700)
-    feat1 = "sb_mean"
-    feat_list = ["ae_max", "sc_ptp", "mfcc_skewness", "sb_max", "ber_min", "sc_deriv_min", "sc_max", "zcr_std", "ro_mean", "ber_max", "ber_std", "ro_max", "zcr_max", "sc_deriv_max", "ro_min"]
+    feat_list = [
+        "sc_min", "sc_max", "sc_ptp", "sc_deriv_max", "sc_deriv_min",
+        "rmse_mean", "rmse_max", "rmse_std",
+        "zcr_total", "zcr_mean", "zcr_max", "zcr_std",
+        "ae_mean", "ae_max", "ae_std",
+        "sb_max", "sb_min", "sb_ptp", "sb_mean", "sb_std",
+        "ro_max", "ro_min", "ro_mean", "ro_std",
+        "ber_max", "ber_min", "ber_mean", "ber_std",
+        "mfcc_skewness", "mfcc_kurtosis"
+    ]
 
     while len(feat_list) > 0:
-        for feat in feat_list:
-            plot_two_features(feature_1_type=feat1, feature_2_type=feat, num_of_good_gate_files=700, num_of_faulty_gate_files=700)
-            print(f"done with {feat1}_{feat}")
-
-        feat1 = feat_list.pop(0)
+        feat = feat_list.pop(0)
+        plot_one_feature(feature_type=feat, num_of_good_gate_files=700, num_of_faulty_gate_files=700)
+        print(f"done with {feat}")
 
     # parser = create_arg_parser()
     # args = parser.parse_args()
